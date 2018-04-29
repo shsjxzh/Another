@@ -9,20 +9,20 @@ program
     ;
 
 decl
-    :   classDecl           //# classDeclLabel
-    |   funcDecl            //# funcDeclLabel
-    |   varDecl';'          //# varDeclLabel
+    :   classDecl
+    |   funcDecl
+    |   fieldVarDecl
     ;
 
 //Statement
 stat
-    :   blockStat           # block
-    |   exprStat            # expression
-    |   selectStat          # select
-    |   iterStat            # iter
-    |   jumpStat            # jump
-    |   varDecl';'          # vardecl
-    |   ';'                 # empty
+    :   blockStat
+    |   exprStat
+    |   selectStat
+    |   iterStat
+    |   jumpStat
+    |   varDeclStat
+    |   emptyStat           //这一个语句不会为它专门创建节点
     ;
 
 blockStat
@@ -34,23 +34,39 @@ exprStat
     ;
 
 selectStat
-    :   IF judgeExpr stat (ELSE IF judgeExpr stat)* (ELSE stat)?
+    :   IF judgeExpr stat elseIfBody* elseBody?
+    ;
+
+elseIfBody
+    :   ELSE IF judgeExpr stat
+    ;
+
+elseBody
+    :   ELSE stat
     ;
 
 iterStat
-    :   WHILE judgeExpr stat                                    # while
-    |   FOR '(' (expr)? ';' (expr)? ';' (expr)? ')' stat        # for
-    |   FOR '(' (varDecl)? ';' (expr)? ';' (expr)? ')' stat     # for
+    :   WHILE judgeExpr stat                                                                     # while
+    |   FOR '(' initE = expr? initV = varDecl? ';' cond = expr? ';' step = expr? ')' stat        # for
     ;
 
 jumpStat
-    :   BREAK ';'
-    |   CONTINUE ';'
-    |   RETURN expr?';'
+    :   BREAK ';'                           # break
+    |   CONTINUE ';'                        # continue
+    |   RETURN expr?';'                     # return
+    ;
+
+varDeclStat
+    :   varDecl SEMI
+    ;
+
+emptyStat
+    :   SEMI
     ;
 
 judgeExpr
-    :   '(' expr ')' ;
+    :   '(' expr ')'
+    ;
 
 //Declaration
 funcDecl
@@ -71,7 +87,7 @@ classDecl
     ;
 
 classStat
-    :   varDecl';'
+    :   fieldVarDecl
     |   funcDecl
     ;
 /*classStat
@@ -87,6 +103,10 @@ methodDecl
 */
 constractDecl
     :   ID '('')' blockStat                             //考虑如何处理它
+    ;
+
+fieldVarDecl
+    :   varDecl SEMI
     ;
 
 varDecl
@@ -110,18 +130,18 @@ expr
     |   <assoc=right> op = ('!'|'~') expr               # Unary
     |   <assoc=right> NEW creator                       # New
 
-    |   expr op = ('*'|'/'|'%') expr                    # MultiDivModu
-    |   expr op = ('+'|'-') expr                        # AddMinus
-    |   expr op = ('<<'|'>>') expr                      # L_R_Shift
-    |   expr op = ('<='|'>='|'<'|'>') expr              # Compare
-    |   expr op = ('=='|'!=') expr                      # EqualCompare
-    |   expr op = '&' expr                              # BitAnd
-    |   expr op = '^' expr                              # BitXor
-    |   expr op = '|' expr                              # BitOr
-    |   expr op = '&&' expr                             # LogAnd
-    |   expr op = '||' expr                             # LogOr
-    |   <assoc=right> expr op = '=' expr                # Assign
-    |   literal                                         # LiteralLeaf
+    |   expr op = ('*'|'/'|'%') expr                    # Binary
+    |   expr op = ('+'|'-') expr                        # Binary
+    |   expr op = ('<<'|'>>') expr                      # Binary
+    |   expr op = ('<='|'>='|'<'|'>') expr              # Binary
+    |   expr op = ('=='|'!=') expr                      # Binary
+    |   expr op = '&' expr                              # Binary
+    |   expr op = '^' expr                              # Binary
+    |   expr op = '|' expr                              # Binary
+    |   expr op = '&&' expr                             # Binary
+    |   expr op = '||' expr                             # Binary
+    |   <assoc=right> expr op = '=' expr                # Binary
+    |   literal                                         # Constant
     |   THIS                                            # This
     |   ID                                              # IDLeaf
     |   '(' expr ')'                                    # Bracket

@@ -1,9 +1,10 @@
-package shsjxzh.compiler.AST;
+package shsjxzh.compiler.AST.Stmt;
 
+import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Expr.ExprNode;
 import shsjxzh.compiler.AST.tool.Position;
 
-public class ReturnStmtNode extends StmtNode{
+public class ReturnStmtNode extends StmtNode {
     private ExprNode reExpr;
 
     public ReturnStmtNode(Position pos, ExprNode reExpr) {
@@ -13,6 +14,6 @@ public class ReturnStmtNode extends StmtNode{
 
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

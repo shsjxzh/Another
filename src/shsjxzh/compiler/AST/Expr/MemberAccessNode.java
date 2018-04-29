@@ -5,16 +5,16 @@ import shsjxzh.compiler.AST.tool.Position;
 
 public class MemberAccessNode extends ExprNode{
     ExprNode object;
-    ExprNode member;
+    String memberRef;
 
-    public MemberAccessNode(Position pos, ExprNode object, ExprNode member) {
+    public MemberAccessNode(Position pos, ExprNode object, String memberRef) {
         super(pos);
         this.object = object;
-        this.member = member;
+        this.memberRef = memberRef;
     }
 
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

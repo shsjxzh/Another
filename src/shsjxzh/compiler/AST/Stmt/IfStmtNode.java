@@ -1,20 +1,25 @@
-package shsjxzh.compiler.AST;
+package shsjxzh.compiler.AST.Stmt;
 
+import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Expr.ExprNode;
 import shsjxzh.compiler.AST.tool.Position;
 
 import java.util.List;
 
 public class IfStmtNode extends StmtNode {
-    private ExprNode cond;
+    private ExprNode ifCond;
     private StmtNode ifBody;
+    private List<ExprNode> elseIfcond;
     private List<StmtNode> elseIfBody;
     private StmtNode elseBody;
 
-    public IfStmtNode(Position pos, ExprNode cond, StmtNode ifBody) {
+    public IfStmtNode(Position pos, ExprNode ifCond, StmtNode ifBody, List<ExprNode> elseIfcond, List<StmtNode> elseIfBody, StmtNode elseBody) {
         super(pos);
-        this.cond = cond;
+        this.ifCond = ifCond;
         this.ifBody = ifBody;
+        this.elseIfcond = elseIfcond;
+        this.elseIfBody = elseIfBody;
+        this.elseBody = elseBody;
     }
 
     public void setElseIfBody(List<StmtNode> elseIfBody) {
@@ -27,6 +32,6 @@ public class IfStmtNode extends StmtNode {
 
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

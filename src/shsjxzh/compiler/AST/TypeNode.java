@@ -27,8 +27,13 @@ public class TypeNode extends ASTNode {
             type = new ArrayType(baseType, dim);
         }
     }
+
+    public Type getType() {
+        return type;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
-        //Do Nothing
+        visitor.visit(this);
     }
 }

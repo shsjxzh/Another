@@ -1,11 +1,13 @@
-package shsjxzh.compiler.AST;
+package shsjxzh.compiler.AST.Decl;
 
+import shsjxzh.compiler.AST.ASTVisitor;
+import shsjxzh.compiler.AST.Stmt.BlockNode;
+import shsjxzh.compiler.AST.TypeNode;
 import shsjxzh.compiler.AST.tool.Position;
-import shsjxzh.compiler.Type.Type;
 
 import java.util.List;
 
-public class FuncDeclNode extends DeclNode{
+public class FuncDeclNode extends DeclNode {
     private TypeNode funcReturnType;
     private BlockNode funcBlock;
     private String funcName;

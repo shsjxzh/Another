@@ -1,8 +1,8 @@
 package shsjxzh.compiler.AST;
 //整个文件的根节点
 
+import shsjxzh.compiler.AST.Decl.DeclNode;
 import shsjxzh.compiler.AST.tool.Position;
-import shsjxzh.compiler.Unuse.VarDeclStmtNode;
 
 import java.util.List;
 
@@ -15,6 +15,10 @@ public class ProgramNode extends ASTNode{
     public ProgramNode(Position pos, List<DeclNode> declnodes) {
         super(pos);
         this.declnodes = declnodes;
+    }
+
+    public List<DeclNode> getDeclnodes() {
+        return declnodes;
     }
 
     @Override

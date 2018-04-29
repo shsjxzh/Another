@@ -5,7 +5,7 @@ import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.tool.Position;
 //import shsjxzh.compiler.Unuse.Type.Type;
 
-public class ExprNode extends ASTNode {
+public abstract class ExprNode extends ASTNode {
     //protected Type exprType;
     protected boolean isLvalue;
 
@@ -19,9 +19,6 @@ public class ExprNode extends ASTNode {
         return isLvalue;
     }
 
-
     @Override
-    public void accept(ASTVisitor visitor) {
-        visitor.visit(this);
-    }
+    public abstract void accept(ASTVisitor visitor) ;
 }

@@ -14,6 +14,6 @@ public class VariableNode extends ExprNode{
 
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

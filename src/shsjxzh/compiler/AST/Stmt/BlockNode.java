@@ -1,10 +1,12 @@
-package shsjxzh.compiler.AST;
+package shsjxzh.compiler.AST.Stmt;
 
+import shsjxzh.compiler.AST.ASTVisitor;
+import shsjxzh.compiler.AST.Stmt.StmtNode;
 import shsjxzh.compiler.AST.tool.Position;
 
 import java.util.List;
 
-public class BlockNode extends StmtNode{
+public class BlockNode extends StmtNode {
     protected List<StmtNode> stmt;
 
     public BlockNode(Position pos, List<StmtNode> stmt) {

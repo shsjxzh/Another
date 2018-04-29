@@ -4,18 +4,17 @@ import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.tool.Position;
 
 public class ArrayIndexNode extends ExprNode {
-    String name;
-    int index;
+    ExprNode array;
+    ExprNode index;
 
-    public ArrayIndexNode(Position pos, String name, int index) {
+    public ArrayIndexNode(Position pos, ExprNode array, ExprNode index) {
         super(pos);
-        this.name = name;
+        this.array = array;
         this.index = index;
         this.isLvalue = true;
     }
-
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

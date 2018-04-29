@@ -19,6 +19,6 @@ public class NewNode extends ExprNode{
 
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

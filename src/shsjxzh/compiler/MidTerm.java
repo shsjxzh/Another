@@ -1,10 +1,10 @@
 package shsjxzh.compiler;
 
-import shsjxzh.compiler.AST.Program;
+//import shsjxzh.compiler.AST.Program;
 import shsjxzh.compiler.FrontEnd.*;
 import shsjxzh.compiler.Parser.MxLexer;
 import shsjxzh.compiler.Parser.MxParser;
-import shsjxzh.compiler.Symbol.GlobalSymbolTable;
+//import shsjxzh.compiler.Symbol.GlobalSymbolTable;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -22,7 +22,9 @@ public class MidTerm {
             MxParser parser = new MxParser(tokens);
 
             ParseTree tree = parser.program();  //构建语法树
+
             ParseTreeWalker walker = new ParseTreeWalker();
+            /*
             ASTBuilder astBuilder = new ASTBuilder();
             walker.walk(astBuilder, tree);
             ProgramNode program = astBuilder.getProgram();
@@ -36,7 +38,7 @@ public class MidTerm {
             program.accept(structSymbolScanner);
             program.accept(structFunctionDeclarator);
             program.accept(semanticChecker);
-            //program.accept(printer);
+            //program.accept(printer);*/
         } catch (Exception e) {
             //e.printStackTrace(System.err);
             System.exit(1);

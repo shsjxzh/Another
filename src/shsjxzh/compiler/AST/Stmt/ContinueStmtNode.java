@@ -1,9 +1,10 @@
-package shsjxzh.compiler.AST;
+package shsjxzh.compiler.AST.Stmt;
 
+import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.tool.Position;
 
-public class StmtNode extends ASTNode{
-    public StmtNode(Position pos) {
+public class ContinueStmtNode extends StmtNode {
+    public ContinueStmtNode(Position pos) {
         super(pos);
     }
 

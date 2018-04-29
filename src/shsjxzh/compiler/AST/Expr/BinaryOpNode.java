@@ -26,6 +26,6 @@ public class BinaryOpNode extends ExprNode{
 
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

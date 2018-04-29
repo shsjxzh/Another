@@ -1,11 +1,12 @@
-package shsjxzh.compiler.AST;
+package shsjxzh.compiler.AST.Decl;
 
 //import shsjxzh.compiler.AST.Object.ClassObject;
+import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.tool.Position;
 
 import java.util.List;
 
-public class ClassDeclNode extends DeclNode{
+public class ClassDeclNode extends DeclNode {
     private String className;
     //如果发现有问题再实现专门的classMember和classMethod节点
     private List<VarDeclNode> classMember;

@@ -18,6 +18,6 @@ public class UnaryNode extends ExprNode {
 
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

@@ -1,6 +1,7 @@
-package shsjxzh.compiler.AST.Expr;
+package shsjxzh.compiler.UnUse;
 
 import shsjxzh.compiler.AST.ASTVisitor;
+import shsjxzh.compiler.AST.Expr.ExprNode;
 import shsjxzh.compiler.AST.tool.Position;
 
 public class AssignNode extends ExprNode{
@@ -14,6 +15,6 @@ public class AssignNode extends ExprNode{
 
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

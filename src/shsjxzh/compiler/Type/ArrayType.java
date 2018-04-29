@@ -11,4 +11,8 @@ public class ArrayType extends Type{
         this.dim = dim;
     }
 
+    @Override
+    public String getDetail() {
+        return "type kind: ArrayType, dim: " + String.valueOf(dim) + ", baseType: " + baseType.name;
+    }
 }
