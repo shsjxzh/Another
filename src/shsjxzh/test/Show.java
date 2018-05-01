@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import shsjxzh.compiler.AST.*;
+import shsjxzh.compiler.ErrorHandle.ParseTreeErrorListener;
 import shsjxzh.compiler.FrontEnd.*;
 import shsjxzh.compiler.Parser.*;
 
@@ -26,11 +27,30 @@ public class Show {
         ast.accept(new ASTPrinter(printOut));
     }
 
-    private void buildAST() throws IOException {
+    private void semanticCheck() {
+        //预处理
+        ScopeTreePrePross scopeTreePrePross = new ScopeTreePrePross();
+        ast.accept(scopeTreePrePross);
+        //引用消除
+        ReferenceResolver referenceResolver = new ReferenceResolver(scopeTreePrePross.getGlobalScope());
+        ast.accept(referenceResolver);
+    }
+
+    private void buildAST() throws Exception {
         ANTLRInputStream input = new ANTLRInputStream(printIn);
         MxLexer lexer = new MxLexer(input);
+
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(ParseTreeErrorListener.INSTANCE);
+
         CommonTokenStream tokens = new CommonTokenStream(lexer);
+
         MxParser parser = new MxParser(tokens);
+
+        parser.removeErrorListeners();
+        parser.addErrorListener(ParseTreeErrorListener.INSTANCE);
+
+
         ParseTree tree = parser.program();  //建语法树
 
         //System.out.println(tree.toStringTree(parser));//看下语法树的样子
