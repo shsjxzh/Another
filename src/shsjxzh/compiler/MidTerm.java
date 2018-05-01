@@ -1,48 +1,72 @@
 package shsjxzh.compiler;
 
-//import shsjxzh.compiler.AST.Program;
-import shsjxzh.compiler.FrontEnd.*;
-import shsjxzh.compiler.Parser.MxLexer;
-import shsjxzh.compiler.Parser.MxParser;
-//import shsjxzh.compiler.Symbol.GlobalSymbolTable;
-
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import shsjxzh.compiler.AST.*;
+import shsjxzh.compiler.ErrorHandle.ParseTreeErrorListener;
+import shsjxzh.compiler.FrontEnd.*;
+import shsjxzh.compiler.Parser.*;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 
 public class MidTerm {
-    static public void main(String[] argv) {
-        try {
-            ANTLRInputStream input = new ANTLRInputStream(System.in);
-            MxLexer lexer = new MxLexer(input);
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            MxParser parser = new MxParser(tokens);
+    private ProgramNode ast;
 
-            ParseTree tree = parser.program();  //构建语法树
+    private InputStream printIn;
+    private PrintStream printOut;
 
-            ParseTreeWalker walker = new ParseTreeWalker();
-            /*
-            ASTBuilder astBuilder = new ASTBuilder();
-            walker.walk(astBuilder, tree);
-            ProgramNode program = astBuilder.getProgram();
+    public MidTerm(InputStream printIn, PrintStream printOut) {
+        this.printIn = printIn;
+        this.printOut = printOut;
+    }
 
-            CompilationError ce = new CompilationError();
-            GlobalSymbolTable sym = new GlobalSymbolTable();
-            StructSymbolScanner structSymbolScanner = new StructSymbolScanner(sym, ce);
-            StructFunctionDeclarator structFunctionDeclarator = new StructFunctionDeclarator(sym, ce);
-            SemanticChecker semanticChecker = new SemanticChecker(sym, ce);
+    private void printAST() {
+        ast.accept(new ASTPrinter(printOut));
+    }
 
-            program.accept(structSymbolScanner);
-            program.accept(structFunctionDeclarator);
-            program.accept(semanticChecker);
-            //program.accept(printer);*/
-        } catch (Exception e) {
-            //e.printStackTrace(System.err);
-            System.exit(1);
-        }
+    private void semanticCheck() {
+        //预处理
+        ScopeTreePrePross scopeTreePrePross = new ScopeTreePrePross();
+        ast.accept(scopeTreePrePross);
+        //引用消除
+        ReferenceResolver referenceResolver = new ReferenceResolver(scopeTreePrePross.getGlobalScope());
+        ast.accept(referenceResolver);
+    }
 
+    private void buildAST() throws Exception {
+        ANTLRInputStream input = new ANTLRInputStream(printIn);
+        MxLexer lexer = new MxLexer(input);
+
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(ParseTreeErrorListener.INSTANCE);
+
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+        MxParser parser = new MxParser(tokens);
+
+        parser.removeErrorListeners();
+        parser.addErrorListener(ParseTreeErrorListener.INSTANCE);
+
+
+        ParseTree tree = parser.program();  //建语法树
+
+        //System.out.println(tree.toStringTree(parser));//看下语法树的样子
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        ast = (ProgramNode) astBuilder.visit(tree);
+    }
+
+    public void run() throws Exception{
+        buildAST();
+        //printAST();
+    }
+
+    public static void main(String[] args) throws Exception{
+        InputStream in = System.in;
+        PrintStream out = System.out;
+        new MidTerm(in, out).run();
     }
 }

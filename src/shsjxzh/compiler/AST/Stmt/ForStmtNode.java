@@ -21,6 +21,26 @@ public class ForStmtNode extends StmtNode {
         this.body = body;
     }
 
+    public ExprNode getBegin_expr() {
+        return begin_expr;
+    }
+
+    public VarDeclNode getBegin_varDecl() {
+        return begin_varDecl;
+    }
+
+    public ExprNode getCond() {
+        return cond;
+    }
+
+    public ExprNode getIter() {
+        return iter;
+    }
+
+    public StmtNode getBody() {
+        return body;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

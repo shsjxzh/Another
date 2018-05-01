@@ -1,4 +1,4 @@
-package shsjxzh.compiler.UnUse;
+package shsjxzh.compiler.AST.Expr;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Expr.ExprNode;
@@ -12,6 +12,6 @@ public class SuffixNode extends UnaryNode {
 
     @Override
     public void accept(ASTVisitor visitor) {
-        super.accept(visitor);
+        visitor.visit(this);
     }
 }

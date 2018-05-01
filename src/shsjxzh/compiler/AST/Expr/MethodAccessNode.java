@@ -18,6 +18,18 @@ public class MethodAccessNode extends ExprNode {
         this.methodParams = methodParams;
     }
 
+    public ExprNode getObject() {
+        return object;
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public List<ExprNode> getMethodParams() {
+        return methodParams;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

@@ -24,6 +24,18 @@ public class BinaryOpNode extends ExprNode{
         this.op = op;
     }
 
+    public ExprNode getLeft() {
+        return left;
+    }
+
+    public ExprNode getRight() {
+        return right;
+    }
+
+    public BinaryOp getOp() {
+        return op;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

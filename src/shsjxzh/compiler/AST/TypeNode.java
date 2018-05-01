@@ -14,7 +14,7 @@ public class TypeNode extends ASTNode {
 
     public TypeNode(Position pos) {
         super(pos);
-        //用来应对void 类型
+        //用来应对void类型
         this.type = null;
     }
 

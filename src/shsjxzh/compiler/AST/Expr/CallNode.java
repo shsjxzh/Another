@@ -15,6 +15,14 @@ public class CallNode extends ExprNode{
         this.funcParams = funcParams;
     }
 
+    public String getFuncName() {
+        return funcName;
+    }
+
+    public List<ExprNode> getFuncParams() {
+        return funcParams;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

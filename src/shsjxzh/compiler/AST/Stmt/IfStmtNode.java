@@ -7,27 +7,27 @@ import shsjxzh.compiler.AST.tool.Position;
 import java.util.List;
 
 public class IfStmtNode extends StmtNode {
-    private ExprNode ifCond;
-    private StmtNode ifBody;
-    private List<ExprNode> elseIfcond;
-    private List<StmtNode> elseIfBody;
-    private StmtNode elseBody;
+    private ExprNode cond;
+    private StmtNode then;
+    private StmtNode otherwise;
 
-    public IfStmtNode(Position pos, ExprNode ifCond, StmtNode ifBody, List<ExprNode> elseIfcond, List<StmtNode> elseIfBody, StmtNode elseBody) {
+    public IfStmtNode(Position pos, ExprNode cond, StmtNode then, StmtNode otherwise) {
         super(pos);
-        this.ifCond = ifCond;
-        this.ifBody = ifBody;
-        this.elseIfcond = elseIfcond;
-        this.elseIfBody = elseIfBody;
-        this.elseBody = elseBody;
+        this.cond = cond;
+        this.then = then;
+        this.otherwise = otherwise;
     }
 
-    public void setElseIfBody(List<StmtNode> elseIfBody) {
-        this.elseIfBody = elseIfBody;
+    public ExprNode getCond() {
+        return cond;
     }
 
-    public void setElseBody(StmtNode elseBody) {
-        this.elseBody = elseBody;
+    public StmtNode getThen() {
+        return then;
+    }
+
+    public StmtNode getOtherwise() {
+        return otherwise;
     }
 
     @Override

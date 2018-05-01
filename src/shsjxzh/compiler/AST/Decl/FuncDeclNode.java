@@ -21,6 +21,23 @@ public class FuncDeclNode extends DeclNode {
         this.funcParams = funcParams;
     }
 
+    public TypeNode getFuncReturnType() {
+        return funcReturnType;
+    }
+
+    public BlockNode getFuncBlock() {
+        return funcBlock;
+    }
+
+    @Override
+    public String getName() {
+        return funcName;
+    }
+
+    public List<VarDeclNode> getFuncParams() {
+        return funcParams;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

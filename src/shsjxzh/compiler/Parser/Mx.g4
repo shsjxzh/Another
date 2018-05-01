@@ -34,13 +34,13 @@ exprStat
     ;
 
 selectStat
-    :   IF judgeExpr stat elseIfBody* elseBody?
+    :   IF judgeExpr stat elseBody?
     ;
-
+/*
 elseIfBody
     :   ELSE IF judgeExpr stat
     ;
-
+*/
 elseBody
     :   ELSE stat
     ;
@@ -83,7 +83,7 @@ formalParameter
 */
 
 classDecl
-    :   CLASS ID '{' (classStat)* (constractDecl)? (classStat)* '}'
+    :   CLASS ID '{' classStat* (constractDecl)? classStat* '}'
     ;
 
 classStat
@@ -117,7 +117,7 @@ varInitializer
     :   '=' expr
     ;
 // Expression
-// ToDo: 前4个修正
+
 expr
     :   expr '[' expr ']'                               # Index
     |   ID  '(' exprList? ')'                           # Call
@@ -152,15 +152,18 @@ exprList
     ;
 
 literal
-    :   NULL_LITERAL
-    |   INT_LITERAL
-    |   STRING_LITERAL
-    |   BOOL_LITERAL
+    :   literalType = NULL_LITERAL
+    |   literalType = INT_LITERAL
+    |   literalType = STRING_LITERAL
+    |   literalType = BOOL_LITERAL
     ;
 
 creator
-    :   nonArrayType ('[' expr ']')+ ('['']')*
-    |   nonArrayType
+    :   nonArrayType newDim?
+    ;
+
+newDim
+    :   (LBRACK expr RBRACK)+ (LBRACK RBRACK)*
     ;
 
 nonArrayType

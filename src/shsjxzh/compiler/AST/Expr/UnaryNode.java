@@ -20,4 +20,12 @@ public class UnaryNode extends ExprNode {
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
+
+    public UnaryOp getOp() {
+        return op;
+    }
+
+    public ExprNode getBody() {
+        return body;
+    }
 }

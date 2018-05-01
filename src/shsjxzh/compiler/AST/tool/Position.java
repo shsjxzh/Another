@@ -21,7 +21,7 @@ public class Position {
 
     @Override
     public String toString() {
-        return "Line " + line + " Column " + column;
+        return " in Line " + line + ", Column " + column;
     }
     /*
     public Position(ParserRuleContext ctx) {

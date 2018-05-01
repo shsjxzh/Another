@@ -17,4 +17,12 @@ public class ArrayIndexNode extends ExprNode {
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
+
+    public ExprNode getArray() {
+        return array;
+    }
+
+    public ExprNode getIndex() {
+        return index;
+    }
 }

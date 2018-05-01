@@ -15,6 +15,14 @@ public class WhileStmtNode extends StmtNode {
         this.body = body;
     }
 
+    public ExprNode getCond() {
+        return cond;
+    }
+
+    public StmtNode getBody() {
+        return body;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

@@ -1,4 +1,4 @@
-package shsjxzh.compiler.test;
+package shsjxzh.test;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -8,7 +8,6 @@ import shsjxzh.compiler.ErrorHandle.ParseTreeErrorListener;
 import shsjxzh.compiler.FrontEnd.*;
 import shsjxzh.compiler.Parser.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 

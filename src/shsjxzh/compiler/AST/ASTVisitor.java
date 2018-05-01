@@ -5,10 +5,7 @@ import shsjxzh.compiler.AST.Decl.FuncDeclNode;
 import shsjxzh.compiler.AST.Decl.VarDeclNode;
 import shsjxzh.compiler.AST.Expr.*;
 import shsjxzh.compiler.AST.Stmt.*;
-import shsjxzh.compiler.UnUse.AndNode;
-import shsjxzh.compiler.UnUse.AssignNode;
-import shsjxzh.compiler.UnUse.OrNode;
-import shsjxzh.compiler.UnUse.SuffixNode;
+import shsjxzh.compiler.AST.Expr.SuffixNode;
 //import shsjxzh.compiler.Unuse.VarDeclStmtNode;
 
 public interface ASTVisitor{
@@ -35,22 +32,20 @@ public interface ASTVisitor{
 
     //Expr
     //void visit(ExprNode node);
-
-    void visit(LiteralNode node);
+    //void visit(LiteralNode node);
     void visit(BoolLiteralNode node);
     void visit(IntLiteralNode node);
     void visit(NullLiteralNode node);
     void visit(StringLiteralNode node);
 
     void visit(BinaryOpNode node);
-    void visit(AndNode node);
-    void visit(OrNode node);
+    //void visit(AndNode node);
+    //void visit(OrNode node);
 
     void visit(UnaryNode node);
     void visit(SuffixNode node);
-    void visit(PerfixNode node);
+    //void visit(PerfixNode node);
 
-    void visit(AssignNode node);
     void visit(ArrayIndexNode node);
     void visit(VariableNode node);
 
@@ -61,6 +56,7 @@ public interface ASTVisitor{
     void visit(MethodAccessNode node);
 
     void visit(NewNode node);
+    void visit(ThisNode node);
 
     //Type
     void visit(TypeNode node);

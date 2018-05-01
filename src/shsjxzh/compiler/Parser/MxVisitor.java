@@ -49,12 +49,6 @@ public interface MxVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSelectStat(MxParser.SelectStatContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link MxParser#elseIfBody}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitElseIfBody(MxParser.ElseIfBodyContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link MxParser#elseBody}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -263,6 +257,12 @@ public interface MxVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitCreator(MxParser.CreatorContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MxParser#newDim}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNewDim(MxParser.NewDimContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link MxParser#nonArrayType}.
 	 * @param ctx the parse tree

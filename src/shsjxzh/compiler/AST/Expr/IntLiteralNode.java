@@ -13,6 +13,10 @@ public class IntLiteralNode extends LiteralNode {
         //this.exprType = new BuildInType("int", 1);
     }
 
+    public int getValue() {
+        return value;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

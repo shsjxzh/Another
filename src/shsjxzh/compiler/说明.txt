@@ -1,0 +1,1 @@
+1，在AST中，所有明确指明的type（如int a = 0;)等都会被置一个type node

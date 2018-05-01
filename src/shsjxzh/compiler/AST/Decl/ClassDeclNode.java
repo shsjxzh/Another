@@ -22,6 +22,23 @@ public class ClassDeclNode extends DeclNode {
     }
 
     @Override
+    public String getName() {
+        return className;
+    }
+
+    public List<VarDeclNode> getClassMember() {
+        return classMember;
+    }
+
+    public List<FuncDeclNode> getClassMethod() {
+        return classMethod;
+    }
+
+    public FuncDeclNode getConstructMethod() {
+        return constructMethod;
+    }
+
+    @Override
     public void accept(ASTVisitor visitor) {
             visitor.visit(this);
     }

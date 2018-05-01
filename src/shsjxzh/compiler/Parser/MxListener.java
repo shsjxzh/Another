@@ -70,16 +70,6 @@ public interface MxListener extends ParseTreeListener {
 	 */
 	void exitSelectStat(MxParser.SelectStatContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MxParser#elseIfBody}.
-	 * @param ctx the parse tree
-	 */
-	void enterElseIfBody(MxParser.ElseIfBodyContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link MxParser#elseIfBody}.
-	 * @param ctx the parse tree
-	 */
-	void exitElseIfBody(MxParser.ElseIfBodyContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link MxParser#elseBody}.
 	 * @param ctx the parse tree
 	 */
@@ -433,6 +423,16 @@ public interface MxListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCreator(MxParser.CreatorContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MxParser#newDim}.
+	 * @param ctx the parse tree
+	 */
+	void enterNewDim(MxParser.NewDimContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MxParser#newDim}.
+	 * @param ctx the parse tree
+	 */
+	void exitNewDim(MxParser.NewDimContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MxParser#nonArrayType}.
 	 * @param ctx the parse tree

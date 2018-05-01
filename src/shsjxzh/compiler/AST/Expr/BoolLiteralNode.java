@@ -13,6 +13,10 @@ public class BoolLiteralNode extends LiteralNode{
         //this.exprType = new BuildInType("bool",1);
     }
 
+    public boolean getValue() {
+        return value;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

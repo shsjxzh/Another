@@ -13,6 +13,14 @@ public class MemberAccessNode extends ExprNode{
         this.memberRef = memberRef;
     }
 
+    public ExprNode getObject() {
+        return object;
+    }
+
+    public String getMemberRef() {
+        return memberRef;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

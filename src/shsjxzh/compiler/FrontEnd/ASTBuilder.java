@@ -1,5 +1,6 @@
 package shsjxzh.compiler.FrontEnd;
 
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import shsjxzh.compiler.AST.*;
 import shsjxzh.compiler.AST.Decl.ClassDeclNode;
@@ -9,22 +10,58 @@ import shsjxzh.compiler.AST.Decl.VarDeclNode;
 import shsjxzh.compiler.AST.Expr.*;
 import shsjxzh.compiler.AST.Stmt.*;
 import shsjxzh.compiler.AST.tool.Position;
+import shsjxzh.compiler.ErrorHandle.ErrorHandler;
 import shsjxzh.compiler.Parser.*;
+import shsjxzh.compiler.Type.NonArrayType;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+//import java.util.LinkedList;
 import java.util.List;
 
 public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     // Start
     @Override
     public ASTNode visitProgram(MxParser.ProgramContext ctx) {
-        List<DeclNode> declnodes = new LinkedList<>();
+        List<DeclNode> declnodes = new ArrayList<>();
         Position progPos = new Position(ctx);
         for (ParseTree child : ctx.decl()){
             DeclNode childNode = (DeclNode) visit(child);
             declnodes.add(childNode);
         }
+        /*
+        //将内置类型，函数等在这个时候加入
+        //int
+        declnodes.add( new ClassDeclNode(progPos,"int",new ArrayList<>(),
+                new ArrayList<>(),null) );
+
+        //String
+        List<FuncDeclNode> stringMethod = new ArrayList<>();
+        //int length()
+        FuncDeclNode length = new FuncDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), null, "length", new ArrayList<>());
+        stringMethod.add(length);
+
+        //int parseInt()
+        FuncDeclNode parseInt = new FuncDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), null, "parseInt", new ArrayList<>());
+        stringMethod.add(parseInt);
+
+        //string substring(int left, int right)
+        List<VarDeclNode> params = new ArrayList<>();
+        params.add(new VarDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), "left",null));
+        params.add(new VarDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), "right",null));
+        FuncDeclNode substring = new FuncDeclNode(progPos, new TypeNode(progPos,new NonArrayType("String")), null, "substring", params);
+        stringMethod.add(substring);
+
+        //int ord(int pos)
+        List<VarDeclNode> params2 = new ArrayList<>();
+        params2.add(new VarDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), "pos",null));
+        FuncDeclNode ord = new FuncDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), null, "ord", params2);
+        stringMethod.add(ord);
+
+        declnodes.add( new ClassDeclNode(progPos, "String", new ArrayList<>(), stringMethod, null));
+
+        (Position pos, String className, List<VarDeclNode> classMember, List<FuncDeclNode> classMethod, FuncDeclNode constructMethod) {
+
+        */
         return new ProgramNode(progPos,declnodes);
     }
 
@@ -38,7 +75,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitVarDecl(MxParser.VarDeclContext ctx) {
         String name = ctx.ID().getText();
-        Position varPos = new Position(ctx.ID());
+        Position varPos = new Position(ctx);
         TypeNode varType = (TypeNode) visit(ctx.type());
 
         ExprNode init = null;
@@ -66,9 +103,9 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
         String funcName = ctx.ID().getText();
 
-        List<VarDeclNode> funcParams = new LinkedList<>();
+        List<VarDeclNode> funcParams = new ArrayList<>();
         //注意这里“？”是否返回一个空指针
-        if (ctx.formalParameters().varDecl() != null) {
+        if (ctx.formalParameters() != null) {
             for (ParseTree param : ctx.formalParameters().varDecl()) {
                 funcParams.add((VarDeclNode) visit(param));
             }
@@ -84,8 +121,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         Position classPos = new Position(ctx);
         String className = ctx.ID().getText();
 
-        List<VarDeclNode> classMember = new LinkedList<>();
-        List<FuncDeclNode> classMethod = new LinkedList<>();
+        List<VarDeclNode> classMember = new ArrayList<>();
+        List<FuncDeclNode> classMethod = new ArrayList<>();
         for (ParseTree child: ctx.classStat()){
             ASTNode childNode = visit(child);
             if (childNode instanceof VarDeclNode){
@@ -98,10 +135,16 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
         FuncDeclNode constructMethod = null;
         if (ctx.constractDecl() != null){
-            Position funcPos = new Position(ctx);
+            Position funcPos = new Position(ctx.constractDecl());
             String funcName = ctx.constractDecl().ID().getText();
+
+            //这里做一个小的构造函数名检查
+            if (!funcName.equals(className)){
+                throw new ErrorHandler("Invalid constructor ", funcPos);
+            }
+
             BlockNode funcBody = (BlockNode) visit(ctx.constractDecl().blockStat());
-            constructMethod = new FuncDeclNode(funcPos, null, funcBody ,funcName, null);
+            constructMethod = new FuncDeclNode(funcPos, null, funcBody ,funcName, new ArrayList<>());
         }
 
         return new ClassDeclNode(classPos, className, classMember, classMethod, constructMethod);
@@ -120,7 +163,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitBlockStat(MxParser.BlockStatContext ctx) {
         Position blockPos = new  Position(ctx);
-        List<StmtNode> blockStmt = new LinkedList<>();
+        List<StmtNode> blockStmt = new ArrayList<>();
         for (ParseTree child : ctx.stat()){
             //如果遇到空语句，返回值应该是null
             //需要测试";"语句
@@ -143,20 +186,9 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         Position ifPos = new Position(ctx);
         ExprNode ifCond = (ExprNode) visit(ctx.judgeExpr().expr());
         StmtNode ifBody = (StmtNode) visit(ctx.stat());
+        StmtNode otherwise = (StmtNode) visit(ctx.elseBody().stat());
 
-        List<ExprNode> elseIfCond = new LinkedList<>();
-        List<StmtNode> elseIfBody = new LinkedList<>();
-
-        for (MxParser.ElseIfBodyContext child : ctx.elseIfBody()) {
-            elseIfCond.add( (ExprNode) visit(child.judgeExpr().expr()));
-            elseIfBody.add( (StmtNode) visit(child.stat()));
-        }
-
-        StmtNode elseBody = null;
-        if (ctx.elseBody() != null){
-            elseBody = (StmtNode) visit(ctx.elseBody().stat());
-        }
-        return new IfStmtNode(ifPos, ifCond, ifBody, elseIfCond, elseIfBody, elseBody);
+        return new IfStmtNode(ifPos, ifCond, ifBody, otherwise);
     }
 
     @Override
@@ -212,8 +244,10 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         return new ReturnStmtNode(new Position(ctx), (ExprNode) visit(ctx.expr()));
     }
 
+    // Expr
     @Override
     public ASTNode visitBinary(MxParser.BinaryContext ctx) {
+        Position binaryPos = new Position(ctx);
         BinaryOpNode.BinaryOp op;
         switch (ctx.op.getType()){
             case MxParser.ADD: op = BinaryOpNode.BinaryOp.ADD; break;
@@ -241,10 +275,9 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
             case MxParser.ASSIGN: op = BinaryOpNode.BinaryOp.ASSIGN; break;
 
-            default: throw new RuntimeException("Unknown binary operator");
+            default: throw new ErrorHandler("Unknown binary operator", binaryPos);
         }
 
-        Position binaryPos = new Position(ctx);
         ExprNode left = (ExprNode) visit(ctx.expr(0));
         ExprNode right = (ExprNode) visit(ctx.expr(1));
 
@@ -254,6 +287,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitUnary(MxParser.UnaryContext ctx) {
         //都是在前部的
+        Position unaryPos = new Position(ctx);
         UnaryNode.UnaryOp op;
         switch (ctx.op.getType()){
             case MxParser.ADD: op = UnaryNode.UnaryOp.POS; break;
@@ -265,13 +299,27 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             case MxParser.LOG_NOT: op = UnaryNode.UnaryOp.LOG_NOT; break;
             case MxParser.BIT_NOT: op = UnaryNode.UnaryOp.BIT_NOT; break;
 
-
-            default: throw new RuntimeException("Unkonwn unary operatro");
+            default: throw new ErrorHandler("Unkonwn unary operator", unaryPos);
         }
-        Position unaryPos = new Position(ctx);
+
         ExprNode exprbody = (ExprNode) visit(ctx.expr());
 
         return new UnaryNode(unaryPos, op, exprbody);
+    }
+
+    @Override
+    public ASTNode visitPostfixSelfAddSub(MxParser.PostfixSelfAddSubContext ctx) {
+        Position suffixPos = new Position(ctx);
+        SuffixNode.UnaryOp op;
+        switch (ctx.op.getType()){
+            case MxParser.INC: op = SuffixNode.UnaryOp.INC; break;
+            case MxParser.DEC: op = SuffixNode.UnaryOp.DEC; break;
+            default: throw new ErrorHandler("Unknown suffix operator", suffixPos);
+        }
+
+        ExprNode exprBody = (ExprNode) visit(ctx.expr());
+
+        return new SuffixNode(suffixPos, op, exprBody);
     }
 
     @Override
@@ -286,7 +334,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     public ASTNode visitCall(MxParser.CallContext ctx) {
         Position callPos = new Position(ctx);
         String funcName = ctx.ID().getText();
-        List<ExprNode> funcParams = new LinkedList<>();
+        List<ExprNode> funcParams = new ArrayList<>();
         if (ctx.exprList() != null){
             for (MxParser.ExprContext child : ctx.exprList().expr()) {
                 ExprNode childNode = (ExprNode) visit(child);
@@ -311,7 +359,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         ExprNode object = (ExprNode) visit(ctx.expr());
 
         String methodName = ctx.ID().getText();
-        List<ExprNode> methodParams = new LinkedList<>();
+        List<ExprNode> methodParams = new ArrayList<>();
         if (ctx.exprList() != null){
             for (MxParser.ExprContext child : ctx.exprList().expr()) {
                 ExprNode childNode = (ExprNode) visit(child);
@@ -326,8 +374,66 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         return visit(ctx.expr());
     }
 
-    /*Todo:
-        后缀操作啦，new啦，常量啦，this啦
+    @Override
+    public ASTNode visitConstant(MxParser.ConstantContext ctx) {
+        return visit(ctx.literal());
+    }
 
-     */
+    @Override
+    public ASTNode visitLiteral(MxParser.LiteralContext ctx) {
+        Position literalPos = new Position(ctx);
+        //此type里包含了常量的信息
+        Token type = ctx.literalType;
+        if (type.getType() == MxParser.NULL_LITERAL){
+            return new NullLiteralNode(literalPos);
+        }
+        else if (type.getType() == MxParser.BOOL_LITERAL){
+            return  new BoolLiteralNode(literalPos, type.getText().equals("true"));
+        }
+        else if (type.getType() == MxParser.INT_LITERAL){
+            return new IntLiteralNode(literalPos, Integer.parseInt(type.getText()));
+        }
+        else if (type.getType() == MxParser.STRING_LITERAL){
+            return new StringLiteralNode(literalPos, type.getText());
+        }
+        else{
+            throw new ErrorHandler("Invalid Literal",literalPos);
+        }
+    }
+
+    @Override
+    public ASTNode visitThis(MxParser.ThisContext ctx) {
+        return new ThisNode(new Position(ctx));
+    }
+
+    @Override
+    public ASTNode visitIDLeaf(MxParser.IDLeafContext ctx) {
+        return new VariableNode(new Position(ctx), ctx.getText());
+    }
+
+    //new
+    @Override
+    public ASTNode visitNew(MxParser.NewContext ctx) {
+        return visit(ctx.creator());
+    }
+
+    @Override
+    public ASTNode visitCreator(MxParser.CreatorContext ctx) {
+        Position creatorPos = new Position(ctx);
+
+        TypeNode typeNode = new TypeNode(new Position(ctx.nonArrayType()));
+        typeNode.setType(ctx.nonArrayType().getText(), 0);
+
+        List<ExprNode> exprDim = new ArrayList<>();
+        if (ctx.newDim()!= null) {
+            for (MxParser.ExprContext child : ctx.newDim().expr()) {
+                ExprNode childNode = (ExprNode) visit(child);
+                exprDim.add(childNode);
+            }
+        }
+        int nonExprDim = 0;
+        if (ctx.newDim() != null) nonExprDim = ctx.newDim().LBRACK().size() - exprDim.size();
+
+        return new NewNode(creatorPos, typeNode, exprDim, nonExprDim);
+    }
 }

@@ -23,7 +23,8 @@ public class VarDeclNode extends DeclNode {
         return varType;
     }
 
-    public String getVarName() {
+    @Override
+    public String getName() {
         return varName;
     }
 

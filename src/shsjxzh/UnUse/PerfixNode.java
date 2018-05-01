@@ -1,4 +1,4 @@
-package shsjxzh.compiler.UnUse;
+package shsjxzh.UnUse;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Expr.ExprNode;
