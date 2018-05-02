@@ -164,7 +164,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             Position funcPos = new Position(ctx.constractDecl());
             String funcName = ctx.constractDecl().ID().getText();
 
-            //这里做一个小的构造函数名检查
+            //constructor check
             if (!funcName.equals(className)){
                 throw new ErrorHandler("Invalid constructor ", funcPos);
             }
@@ -301,7 +301,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitUnary(MxParser.UnaryContext ctx) {
-        //都是在前部的
+        //prefix
         Position unaryPos = new Position(ctx);
         UnaryNode.UnaryOp op;
         switch (ctx.op.getType()){
@@ -397,7 +397,6 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitLiteral(MxParser.LiteralContext ctx) {
         Position literalPos = new Position(ctx);
-        //此type里包含了常量的信息
         Token type = ctx.literalType;
         if (type.getType() == MxParser.NULL_LITERAL){
             return new NullLiteralNode(literalPos);
@@ -446,7 +445,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         Type type = new Type(ctx.nonArrayType().getText(), 0);
         if (ctx.newDim() != null) {
             //nonExprDim = ctx.newDim().LBRACK().size() - exprDim.size();
-            // new操作中的type的dim被定义为整个new出来的数组大小
+            // in "new" type's dim is the whole dim
             type.setDim( ctx.newDim().LBRACK().size() );
         }
         return new NewNode(creatorPos, type, exprDim);
