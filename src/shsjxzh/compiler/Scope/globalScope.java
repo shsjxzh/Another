@@ -1,6 +1,7 @@
 package shsjxzh.compiler.Scope;
 
 import shsjxzh.compiler.AST.Decl.DeclNode;
+import shsjxzh.compiler.AST.tool.Position;
 import shsjxzh.compiler.ErrorHandle.ErrorHandler;
 
 import java.util.HashMap;
@@ -35,5 +36,15 @@ public class GlobalScope extends Scope{
         DeclNode s = entities.get(name);
         if (s != null) return s;
         return null;
+    }
+
+    @Override
+    public DeclNode resolveThis(Position pos) {
+        throw new ErrorHandler("Error using of \"This\"", pos);
+    }
+
+    @Override
+    public String getName() {
+        return "global";
     }
 }

@@ -12,7 +12,7 @@ import shsjxzh.compiler.AST.Stmt.*;
 import shsjxzh.compiler.AST.tool.Position;
 import shsjxzh.compiler.ErrorHandle.ErrorHandler;
 import shsjxzh.compiler.Parser.*;
-import shsjxzh.compiler.Type.NonArrayType;
+import shsjxzh.compiler.Type.Type;
 
 import java.util.ArrayList;
 //import java.util.LinkedList;
@@ -26,50 +26,56 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         declNodes.add( new ClassDeclNode(pos,"int",new ArrayList<>(),
                 new ArrayList<>(),null) );
 
-        //String
+        //string
         List<FuncDeclNode> stringMethod = new ArrayList<>();
         //int length()
-        FuncDeclNode length = new FuncDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), null, "length", new ArrayList<>());
+        FuncDeclNode length = new FuncDeclNode(pos, new Type("int", 0), null, "length", new ArrayList<>());
         stringMethod.add(length);
 
         //int parseInt()
-        FuncDeclNode parseInt = new FuncDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), null, "parseInt", new ArrayList<>());
+        FuncDeclNode parseInt = new FuncDeclNode(pos, new Type("int",0), null, "parseInt", new ArrayList<>());
         stringMethod.add(parseInt);
 
-        //string substring(int left, int right)
-        List<VarDeclNode> params = new ArrayList<>();
-        params.add(new VarDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), "left",null));
-        params.add(new VarDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), "right",null));
-        FuncDeclNode substring = new FuncDeclNode(pos, new TypeNode(pos,new NonArrayType("String")), null, "substring", params);
+        //string subString(int left, int right)
+        List<VarDeclNode> subParams = new ArrayList<>();
+        subParams.add(new VarDeclNode(pos,new Type("int",0), "left",null));
+        subParams.add(new VarDeclNode(pos, new Type("int", 0), "right",null));
+        FuncDeclNode substring = new FuncDeclNode(pos, new Type("string",0), null, "substring", subParams);
         stringMethod.add(substring);
 
         //int ord(int pos)
-        List<VarDeclNode> params2 = new ArrayList<>();
-        params2.add(new VarDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), "pos",null));
-        FuncDeclNode ord = new FuncDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), null, "ord", params2);
+        List<VarDeclNode> ordParams = new ArrayList<>();
+        ordParams.add(new VarDeclNode(pos, new Type("int", 0), "pos",null));
+        FuncDeclNode ord = new FuncDeclNode(pos, new Type("int",0), null, "ord", ordParams);
         stringMethod.add(ord);
 
-        declNodes.add( new ClassDeclNode(pos, "String", new ArrayList<>(), stringMethod, null));
+        declNodes.add( new ClassDeclNode(pos, "string", new ArrayList<>(), stringMethod, null));
 
         //bool
         declNodes.add( new ClassDeclNode(pos,"bool",new ArrayList<>(),
                 new ArrayList<>(),null) );
 
         //Todo: 完成剩下的几个函数加入
-        //void print(String str)
+        //void print(string str)
         List<VarDeclNode> printParams = new ArrayList<>();
-        printParams.add(new VarDeclNode(pos, new TypeNode(pos, new NonArrayType("String")), "str", null));
+        printParams.add(new VarDeclNode(pos, new Type("string",0), "str", null));
         declNodes.add( new FuncDeclNode(pos,null, null,"print", printParams ));
 
-        //void println(String str)
+        //void println(string str)
         List<VarDeclNode> printlnParams = new ArrayList<>();
-        printlnParams.add(new VarDeclNode(pos, new TypeNode(pos, new NonArrayType("String")), "str", null));
+        printlnParams.add(new VarDeclNode(pos, new Type("string",0), "str", null));
         declNodes.add( new FuncDeclNode(pos,null, null,"println", printlnParams) );
 
         //string getString()
-        declNodes.add( new FuncDeclNode(pos,new TypeNode(pos, new NonArrayType("String")), null,"getString", new ArrayList<>()) );
+        declNodes.add( new FuncDeclNode(pos,new Type("string",0), null,"getString", new ArrayList<>()));
 
-        //
+        //int getInt()
+        declNodes.add (new FuncDeclNode(pos, new Type("int",0), null, "getInt",new ArrayList<>()));
+
+        //string toString(int i)
+        List<VarDeclNode> toParams = new ArrayList<>();
+        toParams.add(new VarDeclNode(pos,new Type("int",0),"i", null));
+        declNodes.add(new FuncDeclNode(pos, new Type("string",0), null, "toString", toParams));
 
     }
 
@@ -98,7 +104,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     public ASTNode visitVarDecl(MxParser.VarDeclContext ctx) {
         String name = ctx.ID().getText();
         Position varPos = new Position(ctx);
-        TypeNode varType = (TypeNode) visit(ctx.type());
+        Type varType = new Type(ctx.type().nonArrayType().getText(), ctx.type().LBRACK().size());
 
         ExprNode init = null;
         if (ctx.varInitializer() != null){
@@ -117,10 +123,10 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFuncDecl(MxParser.FuncDeclContext ctx) {
         Position funcPos = new Position(ctx);
-        TypeNode funcReturnType = null;
+        Type funcReturnType = null;
 
         if (ctx.type() != null) {
-            funcReturnType = (TypeNode) visit(ctx.type());
+            funcReturnType = new Type(ctx.type().nonArrayType().getText(), ctx.type().LBRACK().size());
         }
 
         String funcName = ctx.ID().getText();
@@ -170,15 +176,6 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         }
 
         return new ClassDeclNode(classPos, className, classMember, classMethod, constructMethod);
-    }
-
-    //type
-    @Override
-    public ASTNode visitType(MxParser.TypeContext ctx) {
-        Position typePos = new Position(ctx);
-        TypeNode typeNode = new TypeNode(typePos);
-        typeNode.setType(ctx.nonArrayType().getText(), ctx.LBRACK().size());
-        return typeNode;
     }
 
     //Stmt
@@ -443,9 +440,6 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     public ASTNode visitCreator(MxParser.CreatorContext ctx) {
         Position creatorPos = new Position(ctx);
 
-        TypeNode typeNode = new TypeNode(new Position(ctx.nonArrayType()));
-        typeNode.setType(ctx.nonArrayType().getText(), 0);
-
         List<ExprNode> exprDim = new ArrayList<>();
         if (ctx.newDim()!= null) {
             for (MxParser.ExprContext child : ctx.newDim().expr()) {
@@ -453,9 +447,12 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
                 exprDim.add(childNode);
             }
         }
-        int nonExprDim = 0;
-        if (ctx.newDim() != null) nonExprDim = ctx.newDim().LBRACK().size() - exprDim.size();
-
-        return new NewNode(creatorPos, typeNode, exprDim, nonExprDim);
+        Type type = new Type(ctx.nonArrayType().getText(), 0);
+        if (ctx.newDim() != null) {
+            //nonExprDim = ctx.newDim().LBRACK().size() - exprDim.size();
+            // new操作中的type的dim被定义为整个new出来的数组大小
+            type.setDim( ctx.newDim().LBRACK().size() );
+        }
+        return new NewNode(creatorPos, type, exprDim);
     }
 }

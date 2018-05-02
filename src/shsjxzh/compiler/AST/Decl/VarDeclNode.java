@@ -1,25 +1,23 @@
 package shsjxzh.compiler.AST.Decl;
 
 import shsjxzh.compiler.AST.ASTVisitor;
-import shsjxzh.compiler.AST.Decl.DeclNode;
 import shsjxzh.compiler.AST.Expr.ExprNode;
-
-import shsjxzh.compiler.AST.TypeNode;
 import shsjxzh.compiler.AST.tool.Position;
+import shsjxzh.compiler.Type.Type;
 
 public class VarDeclNode extends DeclNode {
-    private TypeNode varType;
+    private Type varType;
     private String varName;
     private ExprNode expr;
 
-    public VarDeclNode(Position pos, TypeNode varType, String varName, ExprNode expr) {
+    public VarDeclNode(Position pos, Type varType, String varName, ExprNode expr) {
         super(pos);
         this.varType = varType;
         this.varName = varName;
         this.expr = expr;
     }
 
-    public TypeNode getVarType() {
+    public Type getVarType() {
         return varType;
     }
 

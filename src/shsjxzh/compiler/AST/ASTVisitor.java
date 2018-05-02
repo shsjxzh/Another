@@ -57,7 +57,4 @@ public interface ASTVisitor{
 
     void visit(NewNode node);
     void visit(ThisNode node);
-
-    //Type
-    void visit(TypeNode node);
 }

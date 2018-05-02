@@ -24,7 +24,6 @@ public class ASTPrinter implements ASTVisitor {
     //下面是工具函数
     private void addIndent() {indent += "\t";}
     private void subIndent() {indent = indent.substring(1);}
-    private void myPrint(String s) {this.out.print(indent + s);}
     private void myPrintln(String s) {this.out.println(indent + s);}
 
     @Override
@@ -46,7 +45,7 @@ public class ASTPrinter implements ASTVisitor {
 
         myPrintln("function return type: ");
         if (node.getFuncReturnType() != null){
-            node.getFuncReturnType().accept(this);
+            myPrintln("\t" + node.getFuncReturnType().toString());
         }
         else myPrintln("\tvoid");
 
@@ -57,7 +56,8 @@ public class ASTPrinter implements ASTVisitor {
             param.accept(this);
         }
 
-        myPrintln("function body: "); node.getFuncBlock().accept(this);
+        myPrintln("function body: ");
+        if (node.getFuncBlock() != null) node.getFuncBlock().accept(this);
 
         subIndent();
     }
@@ -97,7 +97,7 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("VarDeclNode:");
         myPrintln("name: " + node.getName());
         myPrintln("type:");
-        node.getVarType().accept(this);
+        myPrintln("\t" + node.getVarType().toString());
 
         myPrintln("init expr:");
         if (node.getExpr() != null){
@@ -315,13 +315,12 @@ public class ASTPrinter implements ASTVisitor {
     public void visit(NewNode node) {
         addIndent();
         myPrintln("NewNode:");
-        myPrintln("type: "); node.getType().accept(this);
+        myPrintln("type: "); myPrintln(node.getType().toString());
         myPrintln("expr dim: ");
         List<ExprNode> exprDims = node.getExprDim();
         for (ExprNode exprDim : exprDims) {
             exprDim.accept(this);
         }
-        myPrintln("none Expr dim: " + node.getNonExprDim());
 
         subIndent();
     }
@@ -330,14 +329,6 @@ public class ASTPrinter implements ASTVisitor {
     public void visit(ThisNode node) {
         addIndent();
         myPrintln("ThisNode");
-        subIndent();
-    }
-
-    @Override
-    public void visit(TypeNode node) {
-        addIndent();
-        myPrintln("TypeNode:");
-        myPrintln(node.getType().getDetail());
         subIndent();
     }
 }

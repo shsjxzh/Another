@@ -1,6 +1,5 @@
 package shsjxzh.compiler.AST.Decl;
 
-//import shsjxzh.compiler.AST.Object.ClassObject;
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.tool.Position;
 

@@ -1,33 +1,29 @@
 package shsjxzh.compiler.AST.Expr;
 
 import shsjxzh.compiler.AST.ASTVisitor;
-import shsjxzh.compiler.AST.TypeNode;
 import shsjxzh.compiler.AST.tool.Position;
+import shsjxzh.compiler.Type.Type;
 
 import java.util.List;
 
 public class NewNode extends ExprNode{
-    TypeNode type;
+    Type type;
     private List<ExprNode> exprDim;
-    private int nonExprDim;
+    //private int nonExprDim;
 
-    public NewNode(Position pos, TypeNode type, List<ExprNode> exprDim, int nonExprDim) {
+
+    public NewNode(Position pos, Type type, List<ExprNode> exprDim) {
         super(pos);
         this.type = type;
         this.exprDim = exprDim;
-        this.nonExprDim = nonExprDim;
     }
 
-    public TypeNode getType() {
+    public Type getType() {
         return type;
     }
 
     public List<ExprNode> getExprDim() {
         return exprDim;
-    }
-
-    public int getNonExprDim() {
-        return nonExprDim;
     }
 
     @Override

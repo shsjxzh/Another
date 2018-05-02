@@ -28,11 +28,11 @@ public class Show {
 
     private void semanticCheck() {
         //预处理
-        ScopeTreePrePross scopeTreePrePross = new ScopeTreePrePross();
-        ast.accept(scopeTreePrePross);
+        //ScopeTreePrePross scopeTreePrePross = new ScopeTreePrePross();
+        //ast.accept(scopeTreePrePross);
         //引用消除
-        ReferenceResolver referenceResolver = new ReferenceResolver(scopeTreePrePross.getGlobalScope());
-        ast.accept(referenceResolver);
+        //ReferenceResolver referenceResolver = new ReferenceResolver(scopeTreePrePross.getGlobalScope());
+        //ast.accept(referenceResolver);
     }
 
     private void buildAST() throws Exception {

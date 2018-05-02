@@ -28,10 +28,10 @@ public class MidTerm {
 
     private void semanticCheck() {
         //预处理
-        ScopeTreePrePross scopeTreePrePross = new ScopeTreePrePross();
-        ast.accept(scopeTreePrePross);
+        //ScopeTreePrePross scopeTreePrePross = new ScopeTreePrePross();
+        //ast.accept(scopeTreePrePross);
         //引用消除
-        ReferenceResolver referenceResolver = new ReferenceResolver(scopeTreePrePross.getGlobalScope());
+        ReferenceResolver referenceResolver = new ReferenceResolver();
         ast.accept(referenceResolver);
     }
 
@@ -61,6 +61,7 @@ public class MidTerm {
     public void run() throws Exception{
         buildAST();
         //printAST();
+        //semanticCheck();
     }
 
     public static void main(String[] args) throws Exception{
