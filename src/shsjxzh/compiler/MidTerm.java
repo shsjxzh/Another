@@ -51,7 +51,7 @@ public class MidTerm {
 
         ParseTree tree = parser.program();  //build ast
 
-        //System.out.println(tree.toStringTree(parser));//看下语法树的样子
+        //System.out.println(tree.toStringTree(parser));
 
         ASTBuilder astBuilder = new ASTBuilder();
         ast = (ProgramNode) astBuilder.visit(tree);
