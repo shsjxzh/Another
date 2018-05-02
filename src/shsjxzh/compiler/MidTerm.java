@@ -1,3 +1,5 @@
+package shsjxzh.compiler;
+
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -65,5 +67,6 @@ public class MidTerm {
         InputStream in = System.in;
         PrintStream out = System.out;
         new MidTerm(in, out).run();
+        //new MidTerm(in, out).run();
     }
 }

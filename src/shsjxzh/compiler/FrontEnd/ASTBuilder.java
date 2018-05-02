@@ -20,49 +20,71 @@ import java.util.List;
 
 public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     // Start
-    @Override
-    public ASTNode visitProgram(MxParser.ProgramContext ctx) {
-        List<DeclNode> declnodes = new ArrayList<>();
-        Position progPos = new Position(ctx);
-        for (ParseTree child : ctx.decl()){
-            DeclNode childNode = (DeclNode) visit(child);
-            declnodes.add(childNode);
-        }
-        /*
+    private void initialize(Position pos, List<DeclNode> declNodes){
         //将内置类型，函数等在这个时候加入
         //int
-        declnodes.add( new ClassDeclNode(progPos,"int",new ArrayList<>(),
+        declNodes.add( new ClassDeclNode(pos,"int",new ArrayList<>(),
                 new ArrayList<>(),null) );
 
         //String
         List<FuncDeclNode> stringMethod = new ArrayList<>();
         //int length()
-        FuncDeclNode length = new FuncDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), null, "length", new ArrayList<>());
+        FuncDeclNode length = new FuncDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), null, "length", new ArrayList<>());
         stringMethod.add(length);
 
         //int parseInt()
-        FuncDeclNode parseInt = new FuncDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), null, "parseInt", new ArrayList<>());
+        FuncDeclNode parseInt = new FuncDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), null, "parseInt", new ArrayList<>());
         stringMethod.add(parseInt);
 
         //string substring(int left, int right)
         List<VarDeclNode> params = new ArrayList<>();
-        params.add(new VarDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), "left",null));
-        params.add(new VarDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), "right",null));
-        FuncDeclNode substring = new FuncDeclNode(progPos, new TypeNode(progPos,new NonArrayType("String")), null, "substring", params);
+        params.add(new VarDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), "left",null));
+        params.add(new VarDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), "right",null));
+        FuncDeclNode substring = new FuncDeclNode(pos, new TypeNode(pos,new NonArrayType("String")), null, "substring", params);
         stringMethod.add(substring);
 
         //int ord(int pos)
         List<VarDeclNode> params2 = new ArrayList<>();
-        params2.add(new VarDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), "pos",null));
-        FuncDeclNode ord = new FuncDeclNode(progPos, new TypeNode(progPos,new NonArrayType("int")), null, "ord", params2);
+        params2.add(new VarDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), "pos",null));
+        FuncDeclNode ord = new FuncDeclNode(pos, new TypeNode(pos,new NonArrayType("int")), null, "ord", params2);
         stringMethod.add(ord);
 
-        declnodes.add( new ClassDeclNode(progPos, "String", new ArrayList<>(), stringMethod, null));
+        declNodes.add( new ClassDeclNode(pos, "String", new ArrayList<>(), stringMethod, null));
 
-        (Position pos, String className, List<VarDeclNode> classMember, List<FuncDeclNode> classMethod, FuncDeclNode constructMethod) {
+        //bool
+        declNodes.add( new ClassDeclNode(pos,"bool",new ArrayList<>(),
+                new ArrayList<>(),null) );
 
-        */
-        return new ProgramNode(progPos,declnodes);
+        //Todo: 完成剩下的几个函数加入
+        //void print(String str)
+        List<VarDeclNode> printParams = new ArrayList<>();
+        printParams.add(new VarDeclNode(pos, new TypeNode(pos, new NonArrayType("String")), "str", null));
+        declNodes.add( new FuncDeclNode(pos,null, null,"print", printParams ));
+
+        //void println(String str)
+        List<VarDeclNode> printlnParams = new ArrayList<>();
+        printlnParams.add(new VarDeclNode(pos, new TypeNode(pos, new NonArrayType("String")), "str", null));
+        declNodes.add( new FuncDeclNode(pos,null, null,"println", printlnParams) );
+
+        //string getString()
+        declNodes.add( new FuncDeclNode(pos,new TypeNode(pos, new NonArrayType("String")), null,"getString", new ArrayList<>()) );
+
+        //
+
+    }
+
+    @Override
+    public ASTNode visitProgram(MxParser.ProgramContext ctx) {
+        List<DeclNode> declNodes = new ArrayList<>();
+        Position progPos = new Position(ctx);
+        for (ParseTree child : ctx.decl()){
+            DeclNode childNode = (DeclNode) visit(child);
+            declNodes.add(childNode);
+        }
+
+        initialize(progPos,declNodes);
+
+        return new ProgramNode(progPos,declNodes);
     }
 
     // Decl

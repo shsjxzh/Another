@@ -34,7 +34,6 @@ public class ScopeTreePrePross implements ASTVisitor {
 
         //留一段空间给类型检查用
 
-
     }
 
     private void check(ASTNode node){
