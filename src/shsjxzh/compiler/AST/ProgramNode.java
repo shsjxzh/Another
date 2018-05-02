@@ -1,5 +1,4 @@
 package shsjxzh.compiler.AST;
-//整个文件的根节点
 
 import shsjxzh.compiler.AST.Decl.DeclNode;
 import shsjxzh.compiler.AST.tool.Position;
