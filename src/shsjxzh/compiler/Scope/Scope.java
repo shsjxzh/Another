@@ -17,5 +17,5 @@ abstract public class Scope {
     abstract public String getName();
 
     abstract public DeclNode resolve(String name);
-    abstract public DeclNode resolveThis(Position pos);
+    abstract public DeclNode resolveThis();
 }

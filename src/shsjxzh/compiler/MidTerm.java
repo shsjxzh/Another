@@ -60,7 +60,7 @@ public class MidTerm {
     public void run() throws Exception{
         buildAST();
         //printAST();
-        //semanticCheck();
+        semanticCheck();
     }
 
     public static void main(String[] args) throws Exception{

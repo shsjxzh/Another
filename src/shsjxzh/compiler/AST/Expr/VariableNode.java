@@ -2,8 +2,10 @@ package shsjxzh.compiler.AST.Expr;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Decl.DeclNode;
+import shsjxzh.compiler.AST.Decl.VarDeclNode;
 import shsjxzh.compiler.AST.tool.Position;
 
+//find value definition
 public class VariableNode extends ExprNode{
     String name;
 
@@ -22,9 +24,9 @@ public class VariableNode extends ExprNode{
         visitor.visit(this);
     }
 
-    DeclNode entity;
+    VarDeclNode valueDefinition;
 
-    public void setEntity(DeclNode entity) {
-        this.entity = entity;
+    public void setValueDefinition(VarDeclNode valueDefinition) {
+        this.valueDefinition = valueDefinition;
     }
 }

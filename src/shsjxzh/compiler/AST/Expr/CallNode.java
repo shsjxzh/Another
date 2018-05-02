@@ -1,10 +1,12 @@
 package shsjxzh.compiler.AST.Expr;
 
 import shsjxzh.compiler.AST.ASTVisitor;
+import shsjxzh.compiler.AST.Decl.FuncDeclNode;
 import shsjxzh.compiler.AST.tool.Position;
 
 import java.util.List;
 
+//find function definition
 public class CallNode extends ExprNode{
     private String funcName;
     private List<ExprNode> funcParams;
@@ -21,6 +23,12 @@ public class CallNode extends ExprNode{
 
     public List<ExprNode> getFuncParams() {
         return funcParams;
+    }
+
+    private FuncDeclNode funcDefinition;
+
+    public void setFuncDefinition(FuncDeclNode funcDefinition) {
+        this.funcDefinition = funcDefinition;
     }
 
     @Override

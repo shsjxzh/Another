@@ -1,5 +1,6 @@
 package shsjxzh.compiler.Scope;
 
+import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Decl.DeclNode;
 import shsjxzh.compiler.AST.tool.Position;
 import shsjxzh.compiler.ErrorHandle.ErrorHandler;
@@ -14,11 +15,11 @@ public class LocalScope extends Scope{
     public String name;
     public Scope parent;
 
-    public LocalScope(String kind, Scope parent) {
-        this.parent = parent;
-        //null exist in kind
+    public LocalScope(String kind, String name, Scope parent) {
         this.kind = kind;
-        this.entities = new HashMap<>();
+        this.name = name;
+        this.parent = parent;
+        entities = new HashMap<>();
     }
 
     @Override
@@ -49,15 +50,22 @@ public class LocalScope extends Scope{
 
     //ToDo "this"
     @Override
-    public DeclNode resolveThis(Position pos) {
-        Scope tmp = parent;
+    public DeclNode resolveThis() {
+        Scope tmp = this;
+        boolean goThroughFunc = false;
         while(tmp != null && !tmp.getKind().equals("global")){
             if (tmp.getKind().equals("class")){
-
+                if (goThroughFunc) {
+                    return tmp.entities.get(tmp.getName());
+                }
+                else return null;
+            }
+            if (tmp.getKind().equals("function")){
+                goThroughFunc = true;
             }
             tmp = tmp.getParentScope();
         }
-        throw new ErrorHandler("Error using of \"This\"", pos);
+        return null;
     }
 
     @Override

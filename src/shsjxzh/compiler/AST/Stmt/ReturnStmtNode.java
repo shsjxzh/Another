@@ -12,6 +12,10 @@ public class ReturnStmtNode extends StmtNode {
         this.reExpr = reExpr;
     }
 
+    public ExprNode getReExpr() {
+        return reExpr;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

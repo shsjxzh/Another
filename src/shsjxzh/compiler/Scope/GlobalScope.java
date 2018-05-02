@@ -38,8 +38,8 @@ public class GlobalScope extends Scope{
     }
 
     @Override
-    public DeclNode resolveThis(Position pos) {
-        throw new ErrorHandler("Error using of \"This\"", pos);
+    public DeclNode resolveThis() {
+       return null;
     }
 
     @Override
