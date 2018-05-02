@@ -16,7 +16,7 @@ public class LocalScope extends Scope{
 
     public LocalScope(String kind, Scope parent) {
         this.parent = parent;
-        //注意，如果这是个不需要区分的类型，则会将类型直接置为null
+        //null exist in kind
         this.kind = kind;
         this.entities = new HashMap<>();
     }
@@ -47,7 +47,7 @@ public class LocalScope extends Scope{
         return null;
     }
 
-    //ToDo 完成这里的类联系
+    //ToDo "this"
     @Override
     public DeclNode resolveThis(Position pos) {
         Scope tmp = parent;

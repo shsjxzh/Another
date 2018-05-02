@@ -132,7 +132,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         String funcName = ctx.ID().getText();
 
         List<VarDeclNode> funcParams = new ArrayList<>();
-        //注意这里“？”是否返回一个空指针
+        //pay attention to "?"
         if (ctx.formalParameters() != null) {
             for (ParseTree param : ctx.formalParameters().varDecl()) {
                 funcParams.add((VarDeclNode) visit(param));

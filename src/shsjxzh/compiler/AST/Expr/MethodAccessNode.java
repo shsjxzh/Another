@@ -6,7 +6,6 @@ import shsjxzh.compiler.AST.tool.Position;
 import java.util.List;
 
 public class MethodAccessNode extends ExprNode {
-    //先这样尝试一下
     ExprNode object;
     String methodName;
     List<ExprNode> methodParams;

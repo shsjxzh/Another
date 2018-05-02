@@ -23,7 +23,7 @@ public class Type {
     public void setDim(int dim) {
         this.dim = dim;
     }
-    //专门用于类型消解
+    //type reference
     ClassDeclNode typeDefinition;
 
     public ClassDeclNode getTypeDefinition() {
@@ -34,7 +34,7 @@ public class Type {
         this.typeDefinition = typeDefinition;
     }
 
-    //用于类型检查
+    //type check
 
     @Override
     public String toString() {

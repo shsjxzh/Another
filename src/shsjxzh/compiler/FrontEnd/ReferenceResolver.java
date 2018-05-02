@@ -23,12 +23,12 @@ public class ReferenceResolver implements ASTVisitor {
     private GlobalScope globalScope;
     private Scope currentScope;
 
-    //下面这个仅仅是用来预处理class类型
+    //preprocess class
     private Map<String, Scope> tmpClassScope;
     private Map<String, ClassDeclNode> typeDefinitions;
 
     public ReferenceResolver(){
-        //目标：检查未定义变量和未定义函数
+        //check undefined variables and functions
         globalScope = new GlobalScope();
         currentScope = globalScope;
     }
@@ -39,7 +39,7 @@ public class ReferenceResolver implements ASTVisitor {
         }
     }
 
-    //完成类型引用消解
+    //type reference
     private void checkType(Type type, Position pos) {
         if (type != null) {
             ClassDeclNode typeDefinition = typeDefinitions.get(type.getTypeName());
@@ -58,7 +58,7 @@ public class ReferenceResolver implements ASTVisitor {
         currentScope = new LocalScope("class", currentScope);
         tmpClassScope.put(node.getName(), currentScope);
 
-        //这里仅仅是将变量和函数声明了一下，还没有检验
+        //define, not been checked yet
         for (VarDeclNode varDeclNode : node.getClassMember()) {
             currentScope.define(varDeclNode);
         }
@@ -69,12 +69,11 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(ProgramNode node) {
-        //先进行预处理来保证函数、类的向前引用
+        //preprocess for forward reference
         List<DeclNode> decls = node.getDeclnodes();
         for (DeclNode decl : decls) {
             if (decl instanceof FuncDeclNode){
-                //define专指define，已经带了重名检查
-                //注意define仅仅是将这个node加入了当前作用域的列表中，该节点本身并没有经过检查
+                //define with duplicate check
                 currentScope.define(decl);
             }
             if (decl instanceof ClassDeclNode) {
@@ -84,8 +83,7 @@ public class ReferenceResolver implements ASTVisitor {
             }
         }
 
-        // 让这棵树继续访问其他人
-        // 同时完成引用消除和类型消除
+        //check all
         for (DeclNode decl : decls) {
             check(decl);
         }
@@ -94,9 +92,8 @@ public class ReferenceResolver implements ASTVisitor {
     @Override
     public void visit(FuncDeclNode node) {
         //if (currentScope.getKind().equals("class")){
-        //全局函数 & 类的内部方法
+        //function & class method
         currentScope = new LocalScope("function", currentScope);
-        //假定typeNode能够完成消除类型引用并检查的任务
         if (node.getFuncReturnType() != null) {
             checkType(node.getFuncReturnType(), node.getPos());
         }
@@ -104,7 +101,7 @@ public class ReferenceResolver implements ASTVisitor {
             currentScope.define(varDeclNode);
         }
         check(node.getFuncBlock());
-        //不需要退出作用域，block会替你做这件事
+        //block will turn to the parent scope
         //}
     }
 
@@ -118,11 +115,8 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(VarDeclNode node) {
-        //只针对正常的
-        //变量的类型消除
-        checkType(node.getVarType(), node.getPos());
 
-        //对可能的表达式进行引用消除
+        checkType(node.getVarType(), node.getPos());
         check(node.getExpr());
 
         if (!currentScope.getKind().equals("class")) currentScope.define(node);
@@ -135,7 +129,7 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(BlockNode node) {
-        //检查几种情况
+        //think about different cases
     }
 
     @Override
@@ -239,7 +233,7 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(MemberAccessNode node) {
-        //先在这里特判this!!
+        //special judge this!!
     }
 
     @Override

@@ -21,7 +21,7 @@ public class ASTPrinter implements ASTVisitor {
         this.out = out;
     }
 
-    //下面是工具函数
+    //tool
     private void addIndent() {indent += "\t";}
     private void subIndent() {indent = indent.substring(1);}
     private void myPrintln(String s) {this.out.println(indent + s);}

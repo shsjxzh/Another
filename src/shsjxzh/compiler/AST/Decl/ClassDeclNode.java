@@ -7,7 +7,6 @@ import java.util.List;
 
 public class ClassDeclNode extends DeclNode {
     private String className;
-    //如果发现有问题再实现专门的classMember和classMethod节点
     private List<VarDeclNode> classMember;
     private List<FuncDeclNode> classMethod;
     private FuncDeclNode constructMethod;

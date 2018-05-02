@@ -22,7 +22,6 @@ public class VariableNode extends ExprNode{
         visitor.visit(this);
     }
 
-    //以下是为了和实体关联起来用的
     DeclNode entity;
 
     public void setEntity(DeclNode entity) {

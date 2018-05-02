@@ -27,10 +27,9 @@ public class MidTerm {
     }
 
     private void semanticCheck() {
-        //预处理
+        //preprocess
         //ScopeTreePrePross scopeTreePrePross = new ScopeTreePrePross();
         //ast.accept(scopeTreePrePross);
-        //引用消除
         ReferenceResolver referenceResolver = new ReferenceResolver();
         ast.accept(referenceResolver);
     }
@@ -50,7 +49,7 @@ public class MidTerm {
         parser.addErrorListener(ParseTreeErrorListener.INSTANCE);
 
 
-        ParseTree tree = parser.program();  //建语法树
+        ParseTree tree = parser.program();  //build ast
 
         //System.out.println(tree.toStringTree(parser));//看下语法树的样子
 
