@@ -21,7 +21,6 @@ import java.util.List;
 public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     // Start
     private void initialize(Position pos, List<DeclNode> declNodes){
-        //将内置类型，函数等在这个时候加入
         //int
         declNodes.add( new ClassDeclNode(pos,"int",new ArrayList<>(),
                 new ArrayList<>(),null) );
@@ -55,7 +54,6 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         declNodes.add( new ClassDeclNode(pos,"bool",new ArrayList<>(),
                 new ArrayList<>(),null) );
 
-        //Todo: 完成剩下的几个函数加入
         //void print(string str)
         List<VarDeclNode> printParams = new ArrayList<>();
         printParams.add(new VarDeclNode(pos, new Type("string",0), "str", null));
@@ -184,8 +182,6 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         Position blockPos = new  Position(ctx);
         List<StmtNode> blockStmt = new ArrayList<>();
         for (ParseTree child : ctx.stat()){
-            //如果遇到空语句，返回值应该是null
-            //需要测试";"语句
             ASTNode childNode = visit(child);
             if (childNode instanceof StmtNode){
                 blockStmt.add((StmtNode) childNode);
