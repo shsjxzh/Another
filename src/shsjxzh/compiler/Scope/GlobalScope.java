@@ -5,7 +5,6 @@ import shsjxzh.compiler.AST.tool.Position;
 import shsjxzh.compiler.ErrorHandle.ErrorHandler;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class GlobalScope extends Scope{
 
