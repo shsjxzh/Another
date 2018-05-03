@@ -161,6 +161,9 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
                 classMember.add((VarDeclNode) childNode);
             }
             else if (childNode instanceof FuncDeclNode){
+                if (((FuncDeclNode) childNode).getName().equals(className)){
+                    throw new ErrorHandler("Error constructor", childNode.getPos());
+                }
                 classMethod.add((FuncDeclNode) childNode);
             }
         }
