@@ -94,9 +94,13 @@ public class LocalScope extends Scope{
         while(tmp != null && !tmp.getKind().equals("global")){
             if (tmp.getKind().equals("function")){
                 FuncDeclNode funcNode = (FuncDeclNode) ((LocalScope) tmp).parent.entities.get(tmp.getName());
-                if (( (node.getReExpr() == null || node.getReExpr().exprType == null) && funcNode.getFuncReturnType() ==null)
-                    ||    node.getReExpr().exprType.equals(funcNode.getFuncReturnType())){
+                if (( (node.getReExpr() == null || node.getReExpr().exprType == null) && funcNode.getFuncReturnType() ==null)){
                     funcNode.setReturnStmtNode(node);
+                    return true;
+                }
+                else if (node.getReExpr() == null) return false;
+                else if (node.getReExpr().exprType == null) return false;
+                else if(node.getReExpr().exprType.equals(funcNode.getFuncReturnType())){
                     return true;
                 }
             }

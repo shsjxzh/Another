@@ -328,7 +328,11 @@ public class ReferenceResolver implements ASTVisitor {
         Type leftType = node.getLeft().exprType;
         Type rightType = node.getRight().exprType;
         if (leftType == null){
-            throw new ErrorHandler("Error type using or l-value needed", node.getPos());
+            if (node.getOp() == BinaryOpNode.BinaryOp.ASSIGN){
+                if (rightType == null)  throw new ErrorHandler("Error type using or l-value needed", node.getPos());
+                else if (rightType.isBuildInType() || !rightType.isArray()) throw new ErrorHandler("Error using of \"==\"", node.getPos());
+            }
+            else throw new ErrorHandler("Error type using or l-value needed", node.getPos());
         }
 
         switch (node.getOp()){
@@ -340,7 +344,7 @@ public class ReferenceResolver implements ASTVisitor {
                     valid = true;
                 }
                 break;
-            case ADD: case LT: case EQ:
+            case ADD: case LT:
                 if ((leftType.isInt() && rightType != null && rightType.isInt())
                         || (leftType.isString() && rightType.isString())){
                     valid = true;
@@ -351,6 +355,12 @@ public class ReferenceResolver implements ASTVisitor {
                     valid = true;
                 }
                 break;
+            case EQ:
+                if ((leftType.isInt() && rightType != null && rightType.isInt())
+                        || (leftType.isString() && rightType.isString())
+                        || ((!leftType.isBuildInType() || leftType.isArray()) && rightType == null )){
+                    valid = true;
+                }
 
                 default:
                     if (leftType.isInt() && rightType != null &&rightType.isInt()){
