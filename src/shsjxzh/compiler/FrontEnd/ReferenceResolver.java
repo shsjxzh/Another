@@ -24,6 +24,7 @@ public class ReferenceResolver implements ASTVisitor {
     private GlobalScope globalScope;
     private Scope currentScope;
 
+    //the latest
     //preprocess class
     private Map<String, Scope> tmpPreprocessScope;
     private Map<String, ClassDeclNode> typeDefinitions;
@@ -219,12 +220,16 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(BreakStmtNode node) {
-        currentScope.resolveBreakContinue();
+        if (!currentScope.resolveBreakContinue()){
+            throw new ErrorHandler("Error using of break or continue", node.getPos());
+        }
     }
 
     @Override
     public void visit(ContinueStmtNode node) {
-        currentScope.resolveBreakContinue();
+        if (!currentScope.resolveBreakContinue()){
+            throw new ErrorHandler("Error using of break or continue", node.getPos());
+        }
     }
 
     @Override
