@@ -64,9 +64,9 @@ public class MidTerm {
     }
 
     public static void main(String[] args) throws Exception{
-        InputStream in = System.in;
-        PrintStream out = System.out;
-        new MidTerm(in, out).run();
+        //InputStream in = System.in;
+        //PrintStream out = System.out;
+        new MidTerm(System.in, System.out).run();
         //new MidTerm(in, out).run();
     }
 }
