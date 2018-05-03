@@ -8,6 +8,7 @@ import shsjxzh.compiler.ErrorHandle.ParseTreeErrorListener;
 import shsjxzh.compiler.FrontEnd.*;
 import shsjxzh.compiler.Parser.*;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 
@@ -64,9 +65,11 @@ public class MidTerm {
     }
 
     public static void main(String[] args) throws Exception{
+        PrintStream out = System.out;
         //InputStream in = System.in;
-        //PrintStream out = System.out;
-        new MidTerm(System.in, System.out).run();
+        InputStream in = new FileInputStream("program.txt");
+        new MidTerm(in, System.out).run();
         //new MidTerm(in, out).run();
+        //System.exit(1);
     }
 }
