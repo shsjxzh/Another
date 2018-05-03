@@ -80,13 +80,14 @@ public class ReferenceResolver implements ASTVisitor {
         int i = 0;
         for (ExprNode exprNode : checkParams) {
             checkAndInitType(exprNode);
-            Type exprType = exprNode.getExprType();
-            Type funcType = func.getFuncParams().get(i).getVarType();
-            if (exprType == null){
-                if (funcType != null) throw new ErrorHandler("Unmatched function params type", exprNode.getPos());
+            Type rightType = exprNode.getExprType();
+            Type leftType = func.getFuncParams().get(i).getVarType();
+            if ( (leftType.equals(rightType))
+                    || (leftType.isArray() && rightType == null)
+                    || (!leftType.isBuildInType() && rightType == null) ){}
+                    else{
+                throw new ErrorHandler("Unmatched function params type", exprNode.getPos());
             }
-
-            if (!exprType.equals(funcType)) throw new ErrorHandler("Unmatched function params type", exprNode.getPos());
             ++i;
         }
     }
@@ -147,6 +148,16 @@ public class ReferenceResolver implements ASTVisitor {
                 //System.out.println(decl.getName());
                 preProssClass((ClassDeclNode) decl);
             }
+
+            DeclNode mainDecl = globalScope.entities.get("main");
+            if (mainDecl == null) throw new ErrorHandler("missing main function", node.getPos());
+            else {
+                if (mainDecl instanceof FuncDeclNode){
+                    if (((FuncDeclNode) mainDecl).getFuncReturnType() != null
+                            && ((FuncDeclNode) mainDecl).getFuncReturnType().isInt()) {}
+                            else throw new ErrorHandler("error main function", node.getPos());
+                }
+            }
         }
 
         //check all
@@ -177,6 +188,7 @@ public class ReferenceResolver implements ASTVisitor {
             currentScope = tmpPreprocessScope.get(node.getName());
         }
         check(node.getFuncBlock());
+
         currentScope = currentScope.getParentScope();
         //block will turn to the parent scope
     }
@@ -423,7 +435,7 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(CallNode node) {
-        DeclNode decl = globalScope.entities.get(node.getFuncName());
+        DeclNode decl = currentScope.resolve(node.getFuncName());
         if (decl!= null){
             if (decl instanceof FuncDeclNode){
                 //connecting the entities
