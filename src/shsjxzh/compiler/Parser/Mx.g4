@@ -159,7 +159,8 @@ literal
     ;
 
 creator
-    :   nonArrayType ('('')')? newDim?
+    :   nonArrayType ('('')')? (LBRACK expr RBRACK)+ (LBRACK RBRACK)+ (LBRACK expr RBRACK)+    # wrongCreator
+    |   nonArrayType ('('')' | newDim)?                                                        # rightCreator
     ;
 
 newDim

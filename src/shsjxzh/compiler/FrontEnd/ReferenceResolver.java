@@ -94,6 +94,7 @@ public class ReferenceResolver implements ASTVisitor {
 
     private void preProcessFunc(FuncDeclNode node) {
         if (node != null) {
+            currentScope.define(node);
             currentScope = new LocalScope("function", node.getName(), currentScope);
             ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(), currentScope);
             checkTypeDefinition(node.getFuncReturnType(), node.getPos());
@@ -105,6 +106,7 @@ public class ReferenceResolver implements ASTVisitor {
         }
     }
     private void preProssClass(ClassDeclNode node){
+        currentScope.define(node);
         currentScope = new LocalScope("class", node.getName(),currentScope);
        ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(), currentScope);
 
@@ -113,7 +115,6 @@ public class ReferenceResolver implements ASTVisitor {
             check(varDeclNode);
         }
         for (FuncDeclNode funcDeclNode : node.getClassMethod()) {
-            currentScope.define(funcDeclNode);
             if (funcDeclNode.getName().equals("main")){
                 throw new ErrorHandler("Error use of \"main\"", node.getPos());
             }
@@ -131,12 +132,12 @@ public class ReferenceResolver implements ASTVisitor {
         //second preprocess: build method scope and add method params for call check 
         List<DeclNode> decls = node.getDeclnodes();
         for (DeclNode decl : decls) {
-            if (decl instanceof FuncDeclNode){
+            /*if (decl instanceof FuncDeclNode){
                 //define with duplicate check
-                currentScope.define(decl);
-            }
+                //currentScope.define(decl);
+            }*/
             if (decl instanceof ClassDeclNode) {
-                currentScope.define(decl);
+                //currentScope.define(decl);
                 typeDefinitions.put(decl.getName(), (ClassDeclNode) decl);
             }
         }
@@ -150,17 +151,17 @@ public class ReferenceResolver implements ASTVisitor {
                 //System.out.println(decl.getName());
                 preProssClass((ClassDeclNode) decl);
             }
+        }
 
-            DeclNode mainDecl = globalScope.entities.get("main");
-            if (mainDecl == null) throw new ErrorHandler("missing main function", node.getPos());
-            else {
-                if (mainDecl instanceof FuncDeclNode){
-                    if (((FuncDeclNode) mainDecl).getFuncReturnType() != null
-                            && ((FuncDeclNode) mainDecl).getFuncReturnType().isInt()) {}
-                            else throw new ErrorHandler("error main function", node.getPos());
-                }
+        DeclNode mainDecl = globalScope.entities.get("main");
+        if (mainDecl == null) throw new ErrorHandler("missing main function", node.getPos());
+        else {
+            if (mainDecl instanceof FuncDeclNode){
+                if (((FuncDeclNode) mainDecl).getFuncReturnType() != null
+                        && ((FuncDeclNode) mainDecl).getFuncReturnType().isInt()) {}
                 else throw new ErrorHandler("error main function", node.getPos());
             }
+            else throw new ErrorHandler("error main function", node.getPos());
         }
 
         //check all
@@ -263,9 +264,6 @@ public class ReferenceResolver implements ASTVisitor {
         ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(),currentScope);
         checkAndInitType(node.getBegin_expr());
         check(node.getBegin_varDecl());
-        if (node.getBegin_varDecl() != null){
-            currentScope.define(node.getBegin_varDecl());
-        }
         checkAndInitType(node.getCond());
         //in for's condition, it can be anything?
         if (node.getCond() != null && !node.getCond().exprType.isBool()){
@@ -369,6 +367,7 @@ public class ReferenceResolver implements ASTVisitor {
                 break;
             case EQ: case NEQ:
                 if ((leftType.isInt() && rightType != null && rightType.isInt())
+                        || (leftType.isBool() && rightType.isBool())
                         || (leftType.isString() && rightType.isString())
                         || ((!leftType.isBuildInType() || leftType.isArray()) && rightType == null )){
                     valid = true;
@@ -429,6 +428,7 @@ public class ReferenceResolver implements ASTVisitor {
     @Override
     public void visit(ArrayIndexNode node) {
         checkAndInitType(node.getArray());
+        //if (!node.getArray().isLvalue()) throw new ErrorHandler("Error using Index", node.getPos());
         checkAndInitType(node.getIndex());
         //there is nothing to do
     }

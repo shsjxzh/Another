@@ -443,7 +443,12 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     }
 
     @Override
-    public ASTNode visitCreator(MxParser.CreatorContext ctx) {
+    public ASTNode visitWrongCreator(MxParser.WrongCreatorContext ctx) {
+        throw new ErrorHandler("Wrong new creator",new Position(ctx));
+    }
+
+    @Override
+    public ASTNode visitRightCreator(MxParser.RightCreatorContext ctx) {
         Position creatorPos = new Position(ctx);
 
         List<ExprNode> exprDim = new ArrayList<>();
