@@ -207,7 +207,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         Position ifPos = new Position(ctx);
         ExprNode ifCond = (ExprNode) visit(ctx.judgeExpr().expr());
         StmtNode ifBody = (StmtNode) visit(ctx.stat());
-        StmtNode otherwise = (StmtNode) visit(ctx.elseBody().stat());
+        StmtNode otherwise = null;
+        if (ctx.elseBody() != null) otherwise = (StmtNode) visit(ctx.elseBody().stat());
 
         return new IfStmtNode(ifPos, ifCond, ifBody, otherwise);
     }

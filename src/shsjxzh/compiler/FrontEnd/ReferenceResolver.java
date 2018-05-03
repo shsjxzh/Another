@@ -156,13 +156,14 @@ public class ReferenceResolver implements ASTVisitor {
         //when you exit check, it means no errors occur there.
 
         //return missing check
+        /*no return test!
         for (DeclNode decl : decls){
             if (decl instanceof FuncDeclNode){
                 if (!((FuncDeclNode) decl).hasReturn()){
                     throw new ErrorHandler("missing return!" , decl.getPos());
                 }
             }
-        }
+        }*/
     }
 
     @Override
@@ -196,7 +197,12 @@ public class ReferenceResolver implements ASTVisitor {
         checkTypeDefinition(node.getVarType(), node.getPos());
         if (node.getExpr() != null) {
             checkAndInitType(node.getExpr());
-            if (!node.getVarType().equals(node.getExpr().exprType)){
+            Type leftType = node.getVarType();
+            Type rightType = node.getExpr().exprType;
+            if( (leftType.isArray() && rightType == null)
+                    || (!leftType.isBuildInType() && rightType == null)
+                    || leftType.equals(rightType)) {}
+            else{
                 throw new ErrorHandler("Unmatched type in value initialization",node.getPos());
             }
         }
@@ -457,12 +463,6 @@ public class ReferenceResolver implements ASTVisitor {
         /*for (ExprNode exprNode : node.getMethodParams()) {
             checkAndInitType(exprNode);
         }*/
-        if (node.getMethodName().equals("size")){
-            if (node.getMethodParams().size() != 0) throw new ErrorHandler("Unmatched function params type", node.getPos());
-            if (!node.getObject().exprType.isArray()) throw new ErrorHandler("Invalild use of \"size\"", node.getPos());
-            return;
-        }
-
         LocalScope classScope = (LocalScope) tmpPreprocessScope.get(node.getObject().exprType.getTypeName());
         DeclNode methodEntity = classScope.entities.get(node.getMethodName());
 
@@ -472,6 +472,14 @@ public class ReferenceResolver implements ASTVisitor {
             checkFuncParams(node.getMethodParams(),node.getFuncDefinition(), node.getPos());
             return;
         }
+
+        //now it is the buildin "size()"
+        if (node.getMethodName().equals("size")){
+            if (node.getMethodParams().size() != 0) throw new ErrorHandler("Unmatched function params type", node.getPos());
+            if (!node.getObject().exprType.isArray()) throw new ErrorHandler("Invalild use of \"size\"", node.getPos());
+            return;
+        }
+
         throw new ErrorHandler("no such method!", node.getPos());
         // !!unfinished
         // not able to eliminate the reference of class method
