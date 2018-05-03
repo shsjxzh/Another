@@ -10,6 +10,8 @@ import java.util.Map;
 abstract public class Scope {
     //protected List<LocalScope> children;
     public Map<String, DeclNode> entities;
+    public Map<String, Scope> childScope;
+
     abstract public void define(DeclNode entity);
 
     abstract public Scope getParentScope();

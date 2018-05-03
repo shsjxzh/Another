@@ -11,6 +11,7 @@ public class GlobalScope extends Scope{
 
     public GlobalScope() {
         entities = new HashMap<>();
+        childScope = new HashMap<>();
     }
 
     @Override

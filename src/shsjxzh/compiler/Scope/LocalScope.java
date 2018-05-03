@@ -23,6 +23,7 @@ public class LocalScope extends Scope{
         this.name = name;
         this.parent = parent;
         entities = new HashMap<>();
+        childScope = new HashMap<>();
     }
 
     @Override
@@ -94,7 +95,7 @@ public class LocalScope extends Scope{
         while(tmp != null && !tmp.getKind().equals("global")){
             if (tmp.getKind().equals("function")){
                 FuncDeclNode funcNode = (FuncDeclNode) ((LocalScope) tmp).parent.entities.get(tmp.getName());
-                if (( (node.getReExpr() == null || node.getReExpr().exprType == null) && funcNode.getFuncReturnType() ==null)){
+                if (( (node.getReExpr() == null || node.getReExpr().exprType == null) && funcNode.getFuncReturnType() == null)){
                     funcNode.setReturnStmtNode(node);
                     return true;
                 }

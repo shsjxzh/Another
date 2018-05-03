@@ -23,12 +23,10 @@ import java.util.Map;
 public class ReferenceResolver implements ASTVisitor {
     private GlobalScope globalScope;
     private Scope currentScope;
+    private int blockNum, forNum, whileNum, ifNum;
 
     //the latest
-    //preprocess class
-    private Map<String, Scope> tmpPreprocessScope;
     private Map<String, ClassDeclNode> typeDefinitions;
-    private Map<String, Scope> tmpClassMethodScope;
 
     public ReferenceResolver(){
         //aim:
@@ -36,9 +34,11 @@ public class ReferenceResolver implements ASTVisitor {
         //right type using(operator, return type, function calls)
         globalScope = new GlobalScope();
         currentScope = globalScope;
-        tmpPreprocessScope = new HashMap<>();
         typeDefinitions = new HashMap<>();
-        tmpClassMethodScope = new HashMap<>();
+        blockNum = 0;
+        forNum = 0;
+        whileNum = 0;
+        ifNum = 0;
     }
     public GlobalScope getGlobalScope() {
         return globalScope;
@@ -95,8 +95,7 @@ public class ReferenceResolver implements ASTVisitor {
     private void preProcessFunc(FuncDeclNode node) {
         if (node != null) {
             currentScope = new LocalScope("function", node.getName(), currentScope);
-            if (!((LocalScope) currentScope).parent.getKind().equals("class")) tmpPreprocessScope.put(node.getName(), currentScope);
-            else tmpClassMethodScope.put(node.getName(), currentScope);
+            ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(), currentScope);
             checkTypeDefinition(node.getFuncReturnType(), node.getPos());
             for (VarDeclNode varDeclNode : node.getFuncParams()) {
                 check(varDeclNode);
@@ -107,7 +106,7 @@ public class ReferenceResolver implements ASTVisitor {
     }
     private void preProssClass(ClassDeclNode node){
         currentScope = new LocalScope("class", node.getName(),currentScope);
-        tmpPreprocessScope.put(node.getName(), currentScope);
+       ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(), currentScope);
 
         //define, not been checked yet
         for (VarDeclNode varDeclNode : node.getClassMember()) {
@@ -115,6 +114,9 @@ public class ReferenceResolver implements ASTVisitor {
         }
         for (FuncDeclNode funcDeclNode : node.getClassMethod()) {
             currentScope.define(funcDeclNode);
+            if (funcDeclNode.getName().equals("main")){
+                throw new ErrorHandler("Error use of \"main\"", node.getPos());
+            }
             preProcessFunc(funcDeclNode);
         }
         preProcessFunc(node.getConstructMethod());
@@ -157,6 +159,7 @@ public class ReferenceResolver implements ASTVisitor {
                             && ((FuncDeclNode) mainDecl).getFuncReturnType().isInt()) {}
                             else throw new ErrorHandler("error main function", node.getPos());
                 }
+                else throw new ErrorHandler("error main function", node.getPos());
             }
         }
 
@@ -181,12 +184,7 @@ public class ReferenceResolver implements ASTVisitor {
     public void visit(FuncDeclNode node) {
         //function & class method
         //System.out.println(node.getName());
-        if (currentScope.getKind().equals("class")){
-            currentScope = tmpClassMethodScope.get(node.getName());
-        }
-        else {
-            currentScope = tmpPreprocessScope.get(node.getName());
-        }
+        currentScope = currentScope.childScope.get(node.getName());
         check(node.getFuncBlock());
 
         currentScope = currentScope.getParentScope();
@@ -195,7 +193,7 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(ClassDeclNode node) {
-        currentScope = tmpPreprocessScope.get(node.getName());
+        currentScope = currentScope.childScope.get(node.getName());
         check(node.getConstructMethod());
 
         for (FuncDeclNode funcDeclNode : node.getClassMethod()) {
@@ -218,6 +216,9 @@ public class ReferenceResolver implements ASTVisitor {
                 throw new ErrorHandler("Unmatched type in value initialization",node.getPos());
             }
         }
+        if (node.getName().equals("main")){
+            throw new ErrorHandler("Error using of \"main\"", node.getPos());
+        }
         currentScope.define(node);
     }
 
@@ -229,7 +230,8 @@ public class ReferenceResolver implements ASTVisitor {
     @Override
     public void visit(BlockNode node) {
         //think about different cases
-        currentScope = new LocalScope("block","", currentScope);
+        currentScope = new LocalScope("block","block" + (++blockNum), currentScope);
+        ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(),currentScope);
         for (StmtNode stmtNode : node.getStmt()) {
             check(stmtNode);
         }
@@ -257,7 +259,8 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(ForStmtNode node) {
-        currentScope = new LocalScope("for","", currentScope);
+        currentScope = new LocalScope("for","for" + (++forNum), currentScope);
+        ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(),currentScope);
         checkAndInitType(node.getBegin_expr());
         check(node.getBegin_varDecl());
         if (node.getBegin_varDecl() != null){
@@ -265,6 +268,9 @@ public class ReferenceResolver implements ASTVisitor {
         }
         checkAndInitType(node.getCond());
         //in for's condition, it can be anything?
+        if (node.getCond() != null && !node.getCond().exprType.isBool()){
+            throw new ErrorHandler("Error expression in \"for\"",node.getCond().getPos());
+        }
         checkAndInitType(node.getIter());
         check(node.getBody());
         currentScope = currentScope.getParentScope();
@@ -272,6 +278,8 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(IfStmtNode node) {
+        currentScope = new LocalScope("if","if"+(++ifNum), currentScope);
+        ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(),currentScope);
         checkAndInitType(node.getCond());
         if(node.getCond().exprType == null || !node.getCond().getExprType().isBool() ){
             throw new ErrorHandler("error expression in \"if\"'s condition", node.getPos());
@@ -279,17 +287,21 @@ public class ReferenceResolver implements ASTVisitor {
 
         check(node.getThen());
         check(node.getOtherwise());
+        currentScope = currentScope.getParentScope();
     }
 
     @Override
     public void visit(ReturnStmtNode node) {
         checkAndInitType(node.getReExpr());
-        currentScope.resolveReturn(node);
+        if (!currentScope.resolveReturn(node)){
+            throw new ErrorHandler("Error return type", node.getPos());
+        }
     }
 
     @Override
     public void visit(WhileStmtNode node) {
-        currentScope = new LocalScope("while","", currentScope);
+        currentScope = new LocalScope("while","while"+(++whileNum), currentScope);
+        ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(),currentScope);
         checkAndInitType(node.getCond());
         if(node.getCond().exprType == null || !node.getCond().getExprType().isBool()) {
             throw new ErrorHandler("error expression in \"while\"'s condition", node.getPos());
@@ -344,7 +356,7 @@ public class ReferenceResolver implements ASTVisitor {
                     valid = true;
                 }
                 break;
-            case ADD: case LT:
+            case ADD: case LT: case LE: case GT: case GE:
                 if ((leftType.isInt() && rightType != null && rightType.isInt())
                         || (leftType.isString() && rightType.isString())){
                     valid = true;
@@ -355,7 +367,7 @@ public class ReferenceResolver implements ASTVisitor {
                     valid = true;
                 }
                 break;
-            case EQ:
+            case EQ: case NEQ:
                 if ((leftType.isInt() && rightType != null && rightType.isInt())
                         || (leftType.isString() && rightType.isString())
                         || ((!leftType.isBuildInType() || leftType.isArray()) && rightType == null )){
@@ -425,7 +437,9 @@ public class ReferenceResolver implements ASTVisitor {
     public void visit(VariableNode node) {
         DeclNode entity = currentScope.resolve(node.getName());
         if (entity != null){
-            if (entity instanceof VarDeclNode) node.setValueDefinition( (VarDeclNode) entity);
+            if (entity instanceof VarDeclNode) {
+                node.setValueDefinition( (VarDeclNode) entity);
+            }
             else throw new ErrorHandler("Undefined variable \"" + node.getName() + "\"" , node.getPos());
         }
         else{
@@ -457,6 +471,11 @@ public class ReferenceResolver implements ASTVisitor {
             throw new ErrorHandler("Undefined function \"" + node.getFuncName() + "\"" , node.getPos());
         }
 
+        //no call main
+        if (decl.getName().equals("main")){
+            throw new ErrorHandler("main function cannot be called in the programme", node.getPos());
+        }
+
         //function params check;
         checkFuncParams(node.getFuncParams(), node.getFuncDefinition(), node.getPos());
     }
@@ -466,7 +485,7 @@ public class ReferenceResolver implements ASTVisitor {
         //special judge this!!
         checkAndInitType(node.getObject());
 
-        LocalScope classScope = (LocalScope) tmpPreprocessScope.get(node.getObject().exprType.getTypeName());
+        LocalScope classScope = (LocalScope) globalScope.childScope.get(node.getObject().exprType.getTypeName());
         DeclNode varEntity = classScope.entities.get(node.getMemberRef());
         if (varEntity instanceof VarDeclNode){
             //bind
@@ -485,7 +504,7 @@ public class ReferenceResolver implements ASTVisitor {
         /*for (ExprNode exprNode : node.getMethodParams()) {
             checkAndInitType(exprNode);
         }*/
-        LocalScope classScope = (LocalScope) tmpPreprocessScope.get(node.getObject().exprType.getTypeName());
+        LocalScope classScope = (LocalScope) globalScope.childScope.get(node.getObject().exprType.getTypeName());
         DeclNode methodEntity = classScope.entities.get(node.getMethodName());
 
         if (methodEntity instanceof FuncDeclNode){
