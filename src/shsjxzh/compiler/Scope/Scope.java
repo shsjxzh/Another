@@ -1,6 +1,7 @@
 package shsjxzh.compiler.Scope;
 
 import shsjxzh.compiler.AST.Decl.DeclNode;
+import shsjxzh.compiler.AST.Stmt.ReturnStmtNode;
 import shsjxzh.compiler.AST.tool.Position;
 
 import java.util.List;
@@ -18,4 +19,6 @@ abstract public class Scope {
 
     abstract public DeclNode resolve(String name);
     abstract public DeclNode resolveThis();
+    abstract public boolean resolveBreakContinue();
+    abstract public boolean resolveReturn(ReturnStmtNode node);
 }

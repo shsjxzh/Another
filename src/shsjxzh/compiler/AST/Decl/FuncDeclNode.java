@@ -2,6 +2,7 @@ package shsjxzh.compiler.AST.Decl;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Stmt.BlockNode;
+import shsjxzh.compiler.AST.Stmt.ReturnStmtNode;
 import shsjxzh.compiler.AST.tool.Position;
 import shsjxzh.compiler.Type.Type;
 
@@ -19,6 +20,7 @@ public class FuncDeclNode extends DeclNode {
         this.funcBlock = funcBlock;
         this.funcName = funcName;
         this.funcParams = funcParams;
+        this.buildIn = false;
     }
 
     public Type getFuncReturnType() {
@@ -42,4 +44,29 @@ public class FuncDeclNode extends DeclNode {
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
+
+    //return
+    private ReturnStmtNode returnStmtNode;
+    private boolean buildIn;
+    public void setBuildIn(boolean buildIn) {
+        this.buildIn = buildIn;
+    }
+
+    public void setReturnStmtNode(ReturnStmtNode returnStmtNode) {
+        this.returnStmtNode = returnStmtNode;
+    }
+
+    public boolean hasReturn(){
+        return (returnStmtNode != null) || buildIn || funcReturnType == null;
+    }
+
+    public FuncDeclNode(Position pos, Type funcReturnType, BlockNode funcBlock, String funcName, List<VarDeclNode> funcParams, boolean buildIn) {
+        super(pos);
+        this.funcReturnType = funcReturnType;
+        this.funcBlock = funcBlock;
+        this.funcName = funcName;
+        this.funcParams = funcParams;
+        this.buildIn = buildIn;
+    }
 }
+

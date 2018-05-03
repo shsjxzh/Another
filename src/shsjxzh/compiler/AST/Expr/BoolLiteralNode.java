@@ -2,6 +2,7 @@ package shsjxzh.compiler.AST.Expr;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.tool.Position;
+import shsjxzh.compiler.Type.Type;
 //import shsjxzh.compiler.Unuse.Type.BuildInType;
 
 public class BoolLiteralNode extends LiteralNode{
@@ -20,5 +21,10 @@ public class BoolLiteralNode extends LiteralNode{
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public void initExprType() {
+        exprType = new Type("bool",0);
     }
 }

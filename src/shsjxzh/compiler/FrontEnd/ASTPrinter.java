@@ -315,7 +315,7 @@ public class ASTPrinter implements ASTVisitor {
     public void visit(NewNode node) {
         addIndent();
         myPrintln("NewNode:");
-        myPrintln("type: "); myPrintln(node.getType().toString());
+        myPrintln("type: "); myPrintln(node.getExprType().toString());
         myPrintln("expr dim: ");
         List<ExprNode> exprDims = node.getExprDim();
         for (ExprNode exprDim : exprDims) {

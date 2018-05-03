@@ -13,4 +13,9 @@ public class NullLiteralNode extends LiteralNode{
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public void initExprType() {
+        exprType = null;
+    }
 }

@@ -23,6 +23,7 @@ public class Type {
     public void setDim(int dim) {
         this.dim = dim;
     }
+
     //type reference
     ClassDeclNode typeDefinition;
 
@@ -35,6 +36,35 @@ public class Type {
     }
 
     //type check
+    //not override
+    public boolean equals(Type obj) {
+        if (obj != null && this != null){
+            if (obj.getTypeName().equals(typeName) && obj.getDim() == dim){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isArray(){
+        return dim > 0;
+    }
+
+    public boolean isBuildInType(){
+        return typeName.equals("bool") || typeName.equals("string") || typeName.equals("int");
+    }
+
+    public boolean isBool(){
+        return typeName.equals("bool") && dim == 0;
+    }
+
+    public boolean isString(){
+        return typeName.equals("string") && dim == 0;
+    }
+
+    public boolean isInt(){
+        return typeName.equals("int") && dim == 0;
+    }
 
     @Override
     public String toString() {

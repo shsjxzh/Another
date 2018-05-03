@@ -1,6 +1,7 @@
 package shsjxzh.compiler.Scope;
 
 import shsjxzh.compiler.AST.Decl.DeclNode;
+import shsjxzh.compiler.AST.Stmt.ReturnStmtNode;
 import shsjxzh.compiler.AST.tool.Position;
 import shsjxzh.compiler.ErrorHandle.ErrorHandler;
 
@@ -15,7 +16,7 @@ public class GlobalScope extends Scope{
     @Override
     public void define(DeclNode entity) {
         if (entities.get(entity.getName()) != null){
-            throw new ErrorHandler("Duplicate Entities", entity.getPos());
+            throw new ErrorHandler("Duplicate Entities \"" + entity.getName() + "\"", entity.getPos());
         }
         entities.put(entity.getName(), entity);
     }
@@ -45,5 +46,15 @@ public class GlobalScope extends Scope{
     @Override
     public String getName() {
         return "global";
+    }
+
+    @Override
+    public boolean resolveBreakContinue() {
+        return false;
+    }
+
+    @Override
+    public boolean resolveReturn(ReturnStmtNode node) {
+        return false;
     }
 }

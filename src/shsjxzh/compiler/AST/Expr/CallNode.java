@@ -31,8 +31,17 @@ public class CallNode extends ExprNode{
         this.funcDefinition = funcDefinition;
     }
 
+    public FuncDeclNode getFuncDefinition() {
+        return funcDefinition;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public void initExprType() {
+        exprType = funcDefinition.getFuncReturnType();
     }
 }

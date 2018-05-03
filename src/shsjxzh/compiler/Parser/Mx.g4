@@ -159,7 +159,7 @@ literal
     ;
 
 creator
-    :   nonArrayType newDim?
+    :   nonArrayType ('('')')? newDim?
     ;
 
 newDim

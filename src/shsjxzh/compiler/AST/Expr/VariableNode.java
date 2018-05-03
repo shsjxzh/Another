@@ -29,4 +29,13 @@ public class VariableNode extends ExprNode{
     public void setValueDefinition(VarDeclNode valueDefinition) {
         this.valueDefinition = valueDefinition;
     }
+
+    public VarDeclNode getValueDefinition() {
+        return valueDefinition;
+    }
+
+    @Override
+    public void initExprType() {
+        exprType = valueDefinition.getVarType();
+    }
 }

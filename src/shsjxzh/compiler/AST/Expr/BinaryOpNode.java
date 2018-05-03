@@ -2,6 +2,7 @@ package shsjxzh.compiler.AST.Expr;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.tool.Position;
+import shsjxzh.compiler.Type.Type;
 
 public class BinaryOpNode extends ExprNode{
     public enum BinaryOp {
@@ -39,5 +40,17 @@ public class BinaryOpNode extends ExprNode{
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public void initExprType() {
+        switch (op){
+            case EQ: case GE: case GT: case LE: case LT: case NEQ:
+                exprType = new Type("bool",0);
+                break;
+
+                default:
+                    exprType = left.getExprType();
+        }
     }
 }

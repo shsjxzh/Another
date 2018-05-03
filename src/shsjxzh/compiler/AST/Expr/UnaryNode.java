@@ -28,4 +28,9 @@ public class UnaryNode extends ExprNode {
     public ExprNode getBody() {
         return body;
     }
+
+    @Override
+    public void initExprType() {
+        exprType = body.getExprType();
+    }
 }

@@ -2,8 +2,11 @@ package shsjxzh.compiler.Scope;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Decl.DeclNode;
+import shsjxzh.compiler.AST.Decl.FuncDeclNode;
+import shsjxzh.compiler.AST.Stmt.ReturnStmtNode;
 import shsjxzh.compiler.AST.tool.Position;
 import shsjxzh.compiler.ErrorHandle.ErrorHandler;
+import shsjxzh.compiler.Type.Type;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,7 +28,7 @@ public class LocalScope extends Scope{
     @Override
     public void define(DeclNode entity) {
         if (entities.get(entity.getName()) != null){
-            throw new ErrorHandler("Duplicate Entities", entity.getPos());
+            throw new ErrorHandler("Duplicate Entities \"" + entity.getName() + "\"", entity.getPos());
         }
         entities.put(entity.getName(), entity);
     }
@@ -56,7 +59,7 @@ public class LocalScope extends Scope{
         while(tmp != null && !tmp.getKind().equals("global")){
             if (tmp.getKind().equals("class")){
                 if (goThroughFunc) {
-                    return tmp.entities.get(tmp.getName());
+                    return ((LocalScope) tmp).parent.entities.get(tmp.getName());
                 }
                 else return null;
             }
@@ -71,5 +74,34 @@ public class LocalScope extends Scope{
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public boolean resolveBreakContinue() {
+        Scope tmp = this;
+        while(tmp != null && !tmp.getKind().equals("global")){
+            if (tmp.getKind().equals("for") || tmp.getKind().equals("while")){
+                return true;
+            }
+            tmp = tmp.getParentScope();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean resolveReturn(ReturnStmtNode node) {
+        Scope tmp = this;
+        while(tmp != null && !tmp.getKind().equals("global")){
+            if (tmp.getKind().equals("function")){
+                FuncDeclNode funcNode = (FuncDeclNode) ((LocalScope) tmp).parent.entities.get(tmp.getName());
+                if (( (node.getReExpr() == null || node.getReExpr().exprType == null) && funcNode.getFuncReturnType() ==null)
+                    ||    node.getReExpr().exprType.equals(funcNode.getFuncReturnType())){
+                    funcNode.setReturnStmtNode(node);
+                    return true;
+                }
+            }
+            tmp = tmp.getParentScope();
+        }
+        return false;
     }
 }

@@ -7,19 +7,15 @@ import shsjxzh.compiler.Type.Type;
 import java.util.List;
 
 public class NewNode extends ExprNode{
-    Type type;
+    //Type exprtype;
     private List<ExprNode> exprDim;
     //private int nonExprDim;
 
 
-    public NewNode(Position pos, Type type, List<ExprNode> exprDim) {
+    public NewNode(Position pos, List<ExprNode> exprDim, Type exprType) {
         super(pos);
-        this.type = type;
         this.exprDim = exprDim;
-    }
-
-    public Type getType() {
-        return type;
+        this.exprType = exprType;
     }
 
     public List<ExprNode> getExprDim() {
@@ -29,5 +25,10 @@ public class NewNode extends ExprNode{
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public void initExprType() {
+        //do nothing
     }
 }

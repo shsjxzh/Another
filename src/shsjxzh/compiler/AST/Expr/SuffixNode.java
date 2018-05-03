@@ -14,4 +14,9 @@ public class SuffixNode extends UnaryNode {
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public void initExprType() {
+        exprType = body.getExprType();
+    }
 }

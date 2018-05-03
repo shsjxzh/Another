@@ -21,6 +21,8 @@ import java.util.List;
 public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     // Start
     private void initialize(Position pos, List<DeclNode> declNodes){
+        //.size() is lost !! be carefull!!
+        BlockNode emptyBlock = new BlockNode(pos,new ArrayList<>());
         //int
         declNodes.add( new ClassDeclNode(pos,"int",new ArrayList<>(),
                 new ArrayList<>(),null) );
@@ -28,24 +30,28 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         //string
         List<FuncDeclNode> stringMethod = new ArrayList<>();
         //int length()
-        FuncDeclNode length = new FuncDeclNode(pos, new Type("int", 0), null, "length", new ArrayList<>());
+        FuncDeclNode length = new FuncDeclNode(pos, new Type("int", 0), emptyBlock, "length", new ArrayList<>());
+        length.setBuildIn(true);
         stringMethod.add(length);
 
         //int parseInt()
-        FuncDeclNode parseInt = new FuncDeclNode(pos, new Type("int",0), null, "parseInt", new ArrayList<>());
+        FuncDeclNode parseInt = new FuncDeclNode(pos, new Type("int",0), emptyBlock, "parseInt", new ArrayList<>());
+        parseInt.setBuildIn(true);
         stringMethod.add(parseInt);
 
         //string subString(int left, int right)
         List<VarDeclNode> subParams = new ArrayList<>();
         subParams.add(new VarDeclNode(pos,new Type("int",0), "left",null));
         subParams.add(new VarDeclNode(pos, new Type("int", 0), "right",null));
-        FuncDeclNode substring = new FuncDeclNode(pos, new Type("string",0), null, "substring", subParams);
+        FuncDeclNode substring = new FuncDeclNode(pos, new Type("string",0), emptyBlock, "substring", subParams);
+        substring.setBuildIn(true);
         stringMethod.add(substring);
 
         //int ord(int pos)
         List<VarDeclNode> ordParams = new ArrayList<>();
         ordParams.add(new VarDeclNode(pos, new Type("int", 0), "pos",null));
-        FuncDeclNode ord = new FuncDeclNode(pos, new Type("int",0), null, "ord", ordParams);
+        FuncDeclNode ord = new FuncDeclNode(pos, new Type("int",0), emptyBlock, "ord", ordParams);
+        ord.setBuildIn(true);
         stringMethod.add(ord);
 
         declNodes.add( new ClassDeclNode(pos, "string", new ArrayList<>(), stringMethod, null));
@@ -57,23 +63,23 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         //void print(string str)
         List<VarDeclNode> printParams = new ArrayList<>();
         printParams.add(new VarDeclNode(pos, new Type("string",0), "str", null));
-        declNodes.add( new FuncDeclNode(pos,null, null,"print", printParams ));
+        declNodes.add( new FuncDeclNode(pos,null, emptyBlock,"print", printParams , true));
 
         //void println(string str)
         List<VarDeclNode> printlnParams = new ArrayList<>();
         printlnParams.add(new VarDeclNode(pos, new Type("string",0), "str", null));
-        declNodes.add( new FuncDeclNode(pos,null, null,"println", printlnParams) );
+        declNodes.add( new FuncDeclNode(pos,null, emptyBlock,"println", printlnParams, true) );
 
         //string getString()
-        declNodes.add( new FuncDeclNode(pos,new Type("string",0), null,"getString", new ArrayList<>()));
+        declNodes.add( new FuncDeclNode(pos,new Type("string",0), emptyBlock,"getString", new ArrayList<>(), true));
 
         //int getInt()
-        declNodes.add (new FuncDeclNode(pos, new Type("int",0), null, "getInt",new ArrayList<>()));
+        declNodes.add (new FuncDeclNode(pos, new Type("int",0), emptyBlock, "getInt",new ArrayList<>(), true));
 
         //string toString(int i)
         List<VarDeclNode> toParams = new ArrayList<>();
         toParams.add(new VarDeclNode(pos,new Type("int",0),"i", null));
-        declNodes.add(new FuncDeclNode(pos, new Type("string",0), null, "toString", toParams));
+        declNodes.add(new FuncDeclNode(pos, new Type("string",0), emptyBlock, "toString", toParams, true));
 
     }
 
@@ -256,7 +262,11 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitReturn(MxParser.ReturnContext ctx) {
-        return new ReturnStmtNode(new Position(ctx), (ExprNode) visit(ctx.expr()));
+        ExprNode expr = null;
+        if (ctx.expr() != null) {
+            expr = (ExprNode) visit(ctx.expr());
+        }
+        return new ReturnStmtNode(new Position(ctx), expr);
     }
 
     // Expr
@@ -442,12 +452,17 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
                 exprDim.add(childNode);
             }
         }
-        Type type = new Type(ctx.nonArrayType().getText(), 0);
+        Type exprType = new Type(ctx.nonArrayType().getText(), 0);
         if (ctx.newDim() != null) {
             //nonExprDim = ctx.newDim().LBRACK().size() - exprDim.size();
             // in "new" type's dim is the whole dim
-            type.setDim( ctx.newDim().LBRACK().size() );
+            exprType.setDim( ctx.newDim().LBRACK().size() );
         }
-        return new NewNode(creatorPos, type, exprDim);
+        if (exprType.equals(new Type("int",0)) || exprType.equals(new Type("string",0))
+                || exprType.equals(new Type("bool", 0))){
+            throw new ErrorHandler("Build in type cannot be newed", creatorPos);
+        }
+
+        return new NewNode(creatorPos, exprDim, exprType);
     }
 }
