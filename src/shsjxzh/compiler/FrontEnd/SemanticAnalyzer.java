@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReferenceResolver implements ASTVisitor {
+public class SemanticAnalyzer implements ASTVisitor {
     private GlobalScope globalScope;
     private Scope currentScope;
     private int blockNum, forNum, whileNum, ifNum;
@@ -28,7 +28,7 @@ public class ReferenceResolver implements ASTVisitor {
     //the latest
     private Map<String, ClassDeclNode> typeDefinitions;
 
-    public ReferenceResolver(){
+    public SemanticAnalyzer(){
         //aim:
         //check undefined variables and functions
         //right type using(operator, return type, function calls)
@@ -58,7 +58,6 @@ public class ReferenceResolver implements ASTVisitor {
             //ensure that the leaves has been set, so we can initialize the type
             node.initExprType();
         }
-        //null means no type, or null type
     }
 
     //check type reference
@@ -128,16 +127,11 @@ public class ReferenceResolver implements ASTVisitor {
     @Override
     public void visit(ProgramNode node) {
         //preprocess for forward reference
-        //first preprocess: define all functions and classes(with buildin functions and classes)
-        //second preprocess: build method scope and add method params for call check 
+        //first preprocess: define all the types
+        //second preprocess: build all function and class scope for forward reference
         List<DeclNode> decls = node.getDeclnodes();
         for (DeclNode decl : decls) {
-            /*if (decl instanceof FuncDeclNode){
-                //define with duplicate check
-                //currentScope.define(decl);
-            }*/
             if (decl instanceof ClassDeclNode) {
-                //currentScope.define(decl);
                 typeDefinitions.put(decl.getName(), (ClassDeclNode) decl);
             }
         }
@@ -147,13 +141,13 @@ public class ReferenceResolver implements ASTVisitor {
                 preProcessFunc((FuncDeclNode) decl);
             }
             if (decl instanceof ClassDeclNode){
-                //test
-                //System.out.println(decl.getName());
                 preProssClass((ClassDeclNode) decl);
             }
         }
 
         DeclNode mainDecl = globalScope.entities.get("main");
+
+        //main check
         if (mainDecl == null) throw new ErrorHandler("missing main function", node.getPos());
         else {
             if (mainDecl instanceof FuncDeclNode){
@@ -184,12 +178,9 @@ public class ReferenceResolver implements ASTVisitor {
     @Override
     public void visit(FuncDeclNode node) {
         //function & class method
-        //System.out.println(node.getName());
         currentScope = currentScope.childScope.get(node.getName());
         check(node.getFuncBlock());
-
         currentScope = currentScope.getParentScope();
-        //block will turn to the parent scope
     }
 
     @Override
@@ -230,7 +221,6 @@ public class ReferenceResolver implements ASTVisitor {
 
     @Override
     public void visit(BlockNode node) {
-        //think about different cases
         currentScope = new LocalScope("block","block" + (++blockNum), currentScope);
         ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(),currentScope);
         for (StmtNode stmtNode : node.getStmt()) {
@@ -265,7 +255,7 @@ public class ReferenceResolver implements ASTVisitor {
         checkAndInitType(node.getBegin_expr());
         check(node.getBegin_varDecl());
         checkAndInitType(node.getCond());
-        //in for's condition, it can be anything?
+        //in for's condition, it can not be anything
         if (node.getCond() != null && !node.getCond().exprType.isBool()){
             throw new ErrorHandler("Error expression in \"for\"",node.getCond().getPos());
         }
@@ -337,6 +327,8 @@ public class ReferenceResolver implements ASTVisitor {
         boolean valid = false;
         Type leftType = node.getLeft().exprType;
         Type rightType = node.getRight().exprType;
+
+        //check leftType
         if (leftType == null){
             if (node.getOp() == BinaryOpNode.BinaryOp.ASSIGN){
                 if (rightType == null)  throw new ErrorHandler("Error type using or l-value needed", node.getPos());
@@ -428,9 +420,7 @@ public class ReferenceResolver implements ASTVisitor {
     @Override
     public void visit(ArrayIndexNode node) {
         checkAndInitType(node.getArray());
-        //if (!node.getArray().isLvalue()) throw new ErrorHandler("Error using Index", node.getPos());
         checkAndInitType(node.getIndex());
-        //there is nothing to do
     }
 
     @Override
@@ -493,17 +483,11 @@ public class ReferenceResolver implements ASTVisitor {
             return;
         }
         throw new ErrorHandler("no such member!", node.getPos());
-        // if i have the type of the object, then i know how to bind the
-        // !!unfinished
-        // not able to eliminate the reference of member access
     }
 
     @Override
     public void visit(MethodAccessNode node) {
         checkAndInitType(node.getObject());
-        /*for (ExprNode exprNode : node.getMethodParams()) {
-            checkAndInitType(exprNode);
-        }*/
         LocalScope classScope = (LocalScope) globalScope.childScope.get(node.getObject().exprType.getTypeName());
         DeclNode methodEntity = classScope.entities.get(node.getMethodName());
 
@@ -514,7 +498,7 @@ public class ReferenceResolver implements ASTVisitor {
             return;
         }
 
-        //now it is the buildin "size()"
+        //the self defined "size()" has been handled, now it is the buildin "size()"
         if (node.getMethodName().equals("size")){
             if (node.getMethodParams().size() != 0) throw new ErrorHandler("Unmatched function params type", node.getPos());
             if (!node.getObject().exprType.isArray()) throw new ErrorHandler("Invalild use of \"size\"", node.getPos());
@@ -522,13 +506,10 @@ public class ReferenceResolver implements ASTVisitor {
         }
 
         throw new ErrorHandler("no such method!", node.getPos());
-        // !!unfinished
-        // not able to eliminate the reference of class method
     }
 
     @Override
     public void visit(NewNode node) {
-        //already connect the type
         checkTypeDefinition(node.getExprType(),node.getPos());
         for (ExprNode exprNode : node.getExprDim()) {
             checkAndInitType(exprNode);

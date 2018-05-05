@@ -46,19 +46,11 @@ public class FuncDeclNode extends DeclNode {
     }
 
     //return
-    private ReturnStmtNode returnStmtNode;
     private boolean buildIn;
     public void setBuildIn(boolean buildIn) {
         this.buildIn = buildIn;
     }
 
-    public void setReturnStmtNode(ReturnStmtNode returnStmtNode) {
-        this.returnStmtNode = returnStmtNode;
-    }
-
-    public boolean hasReturn(){
-        return (returnStmtNode != null) || buildIn || funcReturnType == null;
-    }
 
     public FuncDeclNode(Position pos, Type funcReturnType, BlockNode funcBlock, String funcName, List<VarDeclNode> funcParams, boolean buildIn) {
         super(pos);

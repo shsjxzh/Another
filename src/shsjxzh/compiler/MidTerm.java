@@ -31,8 +31,8 @@ public class MidTerm {
         //preprocess
         //ScopeTreePrePross scopeTreePrePross = new ScopeTreePrePross();
         //ast.accept(scopeTreePrePross);
-        ReferenceResolver referenceResolver = new ReferenceResolver();
-        ast.accept(referenceResolver);
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
+        ast.accept(semanticAnalyzer);
     }
 
     private void buildAST() throws Exception {
