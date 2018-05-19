@@ -179,7 +179,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             }
 
             BlockNode funcBody = (BlockNode) visit(ctx.constractDecl().blockStat());
-            constructMethod = new FuncDeclNode(funcPos, null, funcBody ,funcName, new ArrayList<>());
+            constructMethod = new FuncDeclNode(funcPos, new Type("null",0), funcBody ,funcName, new ArrayList<>());
         }
 
         return new ClassDeclNode(classPos, className, classMember, classMethod, constructMethod);

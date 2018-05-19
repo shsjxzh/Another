@@ -62,7 +62,7 @@ public class SemanticAnalyzer implements ASTVisitor {
 
     //check type reference
     private void checkTypeDefinition(Type type, Position pos) {
-        if (type != null && !type.isNull()) {
+        if (!type.isNull()) {//type != null &&
             //must be class!!
             ClassDeclNode typeDefinition = typeDefinitions.get(type.getTypeName());
             if (typeDefinition == null) {
@@ -370,7 +370,7 @@ public class SemanticAnalyzer implements ASTVisitor {
                 }
 
                 default:
-                    if (leftType.isInt() && rightType != null &&rightType.isInt()){
+                    if (leftType.isInt() && !rightType.isNull() &&rightType.isInt()){
                         valid = true;
                     }
 
