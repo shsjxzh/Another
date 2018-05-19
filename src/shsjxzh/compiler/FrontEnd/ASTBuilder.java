@@ -467,7 +467,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             // in "new" type's dim is the whole dim
             exprType.setDim( ctx.newDim().LBRACK().size() );
         }
-        if (exprType.isBuildInType()) {
+        if (exprType.isBuildInType() && !exprType.isArray()) {
             throw new ErrorHandler("Build in type cannot be newed", creatorPos);
         }
 
