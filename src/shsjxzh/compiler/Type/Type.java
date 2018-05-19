@@ -38,7 +38,7 @@ public class Type {
     //type check
     //not override
     public boolean equals(Type obj) {
-        if (obj != null && this != null){
+        if (obj != null){
             if (obj.getTypeName().equals(typeName) && obj.getDim() == dim){
                 return true;
             }
@@ -65,6 +65,8 @@ public class Type {
     public boolean isInt(){
         return typeName.equals("int") && dim == 0;
     }
+
+    public boolean isNull() { return typeName.equals("null") && dim == 0; }
 
     @Override
     public String toString() {

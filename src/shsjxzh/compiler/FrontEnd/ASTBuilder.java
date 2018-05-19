@@ -127,7 +127,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFuncDecl(MxParser.FuncDeclContext ctx) {
         Position funcPos = new Position(ctx);
-        Type funcReturnType = null;
+        Type funcReturnType = new Type("null", 0);
 
         if (ctx.type() != null) {
             funcReturnType = new Type(ctx.type().nonArrayType().getText(), ctx.type().LBRACK().size());
@@ -467,8 +467,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             // in "new" type's dim is the whole dim
             exprType.setDim( ctx.newDim().LBRACK().size() );
         }
-        if (exprType.equals(new Type("int",0)) || exprType.equals(new Type("string",0))
-                || exprType.equals(new Type("bool", 0))){
+        if (exprType.isBuildInType()) {
             throw new ErrorHandler("Build in type cannot be newed", creatorPos);
         }
 

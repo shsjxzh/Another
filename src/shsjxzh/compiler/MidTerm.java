@@ -27,10 +27,7 @@ public class MidTerm {
         ast.accept(new ASTPrinter(printOut));
     }
 
-    private void semanticCheck() {
-        //preprocess
-        //ScopeTreePrePross scopeTreePrePross = new ScopeTreePrePross();
-        //ast.accept(scopeTreePrePross);
+    private void semanticAnalysis() {
         SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
         ast.accept(semanticAnalyzer);
     }
@@ -50,9 +47,7 @@ public class MidTerm {
         parser.addErrorListener(ParseTreeErrorListener.INSTANCE);
 
 
-        ParseTree tree = parser.program();  //build ast
-
-        //System.out.println(tree.toStringTree(parser));
+        ParseTree tree = parser.program();  //build cst
 
         ASTBuilder astBuilder = new ASTBuilder();
         ast = (ProgramNode) astBuilder.visit(tree);
@@ -61,7 +56,7 @@ public class MidTerm {
     public void run() throws Exception{
         buildAST();
         //printAST();
-        semanticCheck();
+        semanticAnalysis();
     }
 
     public static void main(String[] args) throws Exception{
@@ -69,7 +64,5 @@ public class MidTerm {
         //InputStream in = System.in;
         InputStream in = new FileInputStream("program.txt");
         new MidTerm(in, System.out).run();
-        //new MidTerm(in, out).run();
-        //System.exit(1);
     }
 }

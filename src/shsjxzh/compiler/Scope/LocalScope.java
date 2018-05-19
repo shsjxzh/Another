@@ -98,20 +98,20 @@ public class LocalScope extends Scope{
                 Type leftType = funcNode.getFuncReturnType();
                 Type rightType;
                 if (node.getReExpr() == null){
-                    rightType = null;
+                    rightType = new Type("null",0);
                 }
                 else {
                     rightType = node.getReExpr().exprType;
                 }
-                if (leftType == null){
-                    if (rightType == null){
+                /*if (leftType.isNull()){
+                    if (rightType.isNull()){
                         return true;
                     }
                     else return false;
-                }
+                }*/
                 if (( (leftType.equals(rightType))
-                        || (leftType.isArray() && rightType == null)
-                        || (!leftType.isBuildInType() && rightType == null) )
+                        || (leftType.isArray() && rightType.isNull())
+                        || (!leftType.isBuildInType() && rightType.isNull()) )
                         ){
                     return true;
                 }

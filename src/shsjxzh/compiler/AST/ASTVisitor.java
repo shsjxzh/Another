@@ -6,7 +6,6 @@ import shsjxzh.compiler.AST.Decl.VarDeclNode;
 import shsjxzh.compiler.AST.Expr.*;
 import shsjxzh.compiler.AST.Stmt.*;
 import shsjxzh.compiler.AST.Expr.SuffixNode;
-//import shsjxzh.compiler.Unuse.VarDeclStmtNode;
 
 public interface ASTVisitor{
 
@@ -50,7 +49,6 @@ public interface ASTVisitor{
     void visit(VariableNode node);
 
     void visit(CallNode node);
-    //void visit(ExprListNode node);
 
     void visit(MemberAccessNode node);
     void visit(MethodAccessNode node);

@@ -2,6 +2,7 @@ package shsjxzh.compiler.AST.Expr;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.tool.Position;
+import shsjxzh.compiler.Type.Type;
 
 public class NullLiteralNode extends LiteralNode{
     public NullLiteralNode(Position pos) {
@@ -16,6 +17,6 @@ public class NullLiteralNode extends LiteralNode{
 
     @Override
     public void initExprType() {
-        exprType = null;
+        exprType = new Type("null", 0);
     }
 }

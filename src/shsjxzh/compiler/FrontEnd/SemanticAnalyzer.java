@@ -62,7 +62,7 @@ public class SemanticAnalyzer implements ASTVisitor {
 
     //check type reference
     private void checkTypeDefinition(Type type, Position pos) {
-        if (type != null) {
+        if (!type.isNull()) {
             //must be class!!
             ClassDeclNode typeDefinition = typeDefinitions.get(type.getTypeName());
             if (typeDefinition == null) {
@@ -82,8 +82,8 @@ public class SemanticAnalyzer implements ASTVisitor {
             Type rightType = exprNode.getExprType();
             Type leftType = func.getFuncParams().get(i).getVarType();
             if ( (leftType.equals(rightType))
-                    || (leftType.isArray() && rightType == null)
-                    || (!leftType.isBuildInType() && rightType == null) ){}
+                    || (leftType.isArray() && rightType.isNull())
+                    || (!leftType.isBuildInType() && rightType.isNull()) ){}
                     else{
                 throw new ErrorHandler("Unmatched function params type", exprNode.getPos());
             }
@@ -151,7 +151,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         if (mainDecl == null) throw new ErrorHandler("missing main function", node.getPos());
         else {
             if (mainDecl instanceof FuncDeclNode){
-                if (((FuncDeclNode) mainDecl).getFuncReturnType() != null
+                if (!((FuncDeclNode) mainDecl).getFuncReturnType().isNull()
                         && ((FuncDeclNode) mainDecl).getFuncReturnType().isInt()) {}
                 else throw new ErrorHandler("error main function", node.getPos());
             }
@@ -201,8 +201,8 @@ public class SemanticAnalyzer implements ASTVisitor {
             checkAndInitType(node.getExpr());
             Type leftType = node.getVarType();
             Type rightType = node.getExpr().exprType;
-            if( (leftType.isArray() && rightType == null)
-                    || (!leftType.isBuildInType() && rightType == null)
+            if( (leftType.isArray() && rightType.isNull())
+                    || (!leftType.isBuildInType() && rightType.isNull())
                     || leftType.equals(rightType)) {}
             else{
                 throw new ErrorHandler("Unmatched type in value initialization",node.getPos());
@@ -269,7 +269,11 @@ public class SemanticAnalyzer implements ASTVisitor {
         currentScope = new LocalScope("if","if"+(++ifNum), currentScope);
         ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(),currentScope);
         checkAndInitType(node.getCond());
-        if(node.getCond().exprType == null || !node.getCond().getExprType().isBool() ){
+        //double check this!
+        /*if(node.getCond().exprType == null || !node.getCond().getExprType().isBool() ){
+            throw new ErrorHandler("error expression in \"if\"'s condition", node.getPos());
+        }*/
+        if(node.getCond() == null || !node.getCond().getExprType().isBool() ){
             throw new ErrorHandler("error expression in \"if\"'s condition", node.getPos());
         }
 
@@ -291,7 +295,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         currentScope = new LocalScope("while","while"+(++whileNum), currentScope);
         ((LocalScope) currentScope).parent.childScope.put(currentScope.getName(),currentScope);
         checkAndInitType(node.getCond());
-        if(node.getCond().exprType == null || !node.getCond().getExprType().isBool()) {
+        if(node.getCond() == null || !node.getCond().getExprType().isBool()) {
             throw new ErrorHandler("error expression in \"while\"'s condition", node.getPos());
         }
         check(node.getBody());
@@ -329,9 +333,9 @@ public class SemanticAnalyzer implements ASTVisitor {
         Type rightType = node.getRight().exprType;
 
         //check leftType
-        if (leftType == null){
+        if (leftType.isNull()){
             if (node.getOp() == BinaryOpNode.BinaryOp.ASSIGN){
-                if (rightType == null)  throw new ErrorHandler("Error type using or l-value needed", node.getPos());
+                if (rightType.isNull())  throw new ErrorHandler("Error type using or l-value needed", node.getPos());
                 else if (rightType.isBuildInType() || !rightType.isArray()) throw new ErrorHandler("Error using of \"==\"", node.getPos());
             }
             else throw new ErrorHandler("Error type using or l-value needed", node.getPos());
@@ -340,28 +344,28 @@ public class SemanticAnalyzer implements ASTVisitor {
         switch (node.getOp()){
             case ASSIGN:
                 if (( (leftType.equals(rightType))
-                        || (leftType.isArray() && rightType == null)
-                        || (!leftType.isBuildInType() && rightType == null) )
+                        || (leftType.isArray() && rightType.isNull())
+                        || (!leftType.isBuildInType() && rightType.isNull()) )
                         && node.getLeft().isLvalue() /*expression's left value*/){
                     valid = true;
                 }
                 break;
             case ADD: case LT: case LE: case GT: case GE:
-                if ((leftType.isInt() && rightType != null && rightType.isInt())
+                if ((leftType.isInt() && !rightType.isNull() && rightType.isInt())
                         || (leftType.isString() && rightType.isString())){
                     valid = true;
                 }
                 break;
             case LOG_OR: case LOG_AND:
-                if (leftType.isBool() && rightType != null && rightType.isBool()) {
+                if (leftType.isBool() && !rightType.isNull() && rightType.isBool()) {
                     valid = true;
                 }
                 break;
             case EQ: case NEQ:
-                if ((leftType.isInt() && rightType != null && rightType.isInt())
+                if ((leftType.isInt() && !rightType.isNull() && rightType.isInt())
                         || (leftType.isBool() && rightType.isBool())
                         || (leftType.isString() && rightType.isString())
-                        || ((!leftType.isBuildInType() || leftType.isArray()) && rightType == null )){
+                        || ((!leftType.isBuildInType() || leftType.isArray()) && rightType.isNull() )){
                     valid = true;
                 }
 
@@ -383,7 +387,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         //type use check, left value check
         boolean valid = false;
         Type type = node.getBody().exprType;
-        if (type == null){
+        if (type.isNull()){
             throw new ErrorHandler("Error type using or l-value needed", node.getPos());
         }
         switch (node.getOp()){
@@ -412,7 +416,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         checkAndInitType(node.getBody());
         //type use check, left value check
         Type type = node.getBody().exprType;
-        if (type == null) throw new ErrorHandler("Error type using or l-value needed", node.getPos());
+        if (type.isNull()) throw new ErrorHandler("Error type using or l-value needed", node.getPos());
         if (type.isInt() && node.getBody().isLvalue()){ }
         else throw new ErrorHandler("Error type using or l-value needed", node.getPos());
     }

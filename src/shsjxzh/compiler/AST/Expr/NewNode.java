@@ -30,5 +30,6 @@ public class NewNode extends ExprNode{
     @Override
     public void initExprType() {
         //do nothing
+        //type have been set at the stage of building ast
     }
 }
