@@ -63,12 +63,12 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         //void print(string str)
         List<VarDeclNode> printParams = new ArrayList<>();
         printParams.add(new VarDeclNode(pos, new Type("string",0), "str", null));
-        declNodes.add( new FuncDeclNode(pos,null, emptyBlock,"print", printParams , true));
+        declNodes.add( new FuncDeclNode(pos,new Type("null",0), emptyBlock,"print", printParams , true));
 
         //void println(string str)
         List<VarDeclNode> printlnParams = new ArrayList<>();
         printlnParams.add(new VarDeclNode(pos, new Type("string",0), "str", null));
-        declNodes.add( new FuncDeclNode(pos,null, emptyBlock,"println", printlnParams, true) );
+        declNodes.add( new FuncDeclNode(pos,new Type("null",0), emptyBlock,"println", printlnParams, true) );
 
         //string getString()
         declNodes.add( new FuncDeclNode(pos,new Type("string",0), emptyBlock,"getString", new ArrayList<>(), true));

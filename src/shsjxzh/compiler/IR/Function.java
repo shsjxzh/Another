@@ -17,4 +17,16 @@ public class Function {
     public Function(String name) {
         this.name = name;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getRetSize() {
+        return retSize;
+    }
+
+    public void accept(IRVisitor visitor){
+        visitor.visit(this);
+    }
 }
