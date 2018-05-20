@@ -2,24 +2,20 @@ package shsjxzh.compiler.FrontEnd;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Decl.ClassDeclNode;
-import shsjxzh.compiler.AST.Decl.DeclNode;
 import shsjxzh.compiler.AST.Decl.FuncDeclNode;
 import shsjxzh.compiler.AST.Decl.VarDeclNode;
 import shsjxzh.compiler.AST.Expr.*;
 import shsjxzh.compiler.AST.ProgramNode;
 import shsjxzh.compiler.AST.Stmt.*;
+import shsjxzh.compiler.IR.BasicBlock;
 
 public class IRBuilder implements ASTVisitor {
+    BasicBlock curBB;
+
+
     @Override
     public void visit(ProgramNode node) {
-        for (DeclNode declNode : node.getDeclnodes()) {
-            if (declNode instanceof VarDeclNode){
-                //global value
-            }
-            else{
-                //function or class
-            }
-        }
+
     }
 
     @Override

@@ -1,32 +1,15 @@
 package shsjxzh.compiler.IR;
 
-import shsjxzh.compiler.IR.Value.VirtualRegister;
+import shsjxzh.compiler.AST.Decl.FuncDeclNode;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Function {
-    public List<VirtualRegister> argvRegList = new ArrayList<>();
+public class Function{
     private String name;
-    public BasicBlock startBB;
-    public BasicBlock exitBB;
+    private BasicBlock startBB;
+    private BasicBlock exitBB;
+    private int returnSize;
 
-    //determine the size of the return value
-    private int retSize;
-
-    public Function(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getRetSize() {
-        return retSize;
-    }
-
-    public void accept(IRVisitor visitor){
-        visitor.visit(this);
+    public Function(FuncDeclNode node){
+        name = node.getName();
+        //returnSize = node.
     }
 }

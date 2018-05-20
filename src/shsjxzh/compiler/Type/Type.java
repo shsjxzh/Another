@@ -68,6 +68,16 @@ public class Type {
 
     public boolean isNull() { return typeName.equals("null") && dim == 0; }
 
+    public int getByteSize(){
+        int wise = 8;
+        if (isBool()) return wise;
+        else if (isInt()) return wise;
+        else {
+            //now it is pointer
+            return wise;
+        }
+    }
+
     @Override
     public String toString() {
         return ("type name: " + typeName + " dim: " + dim);
