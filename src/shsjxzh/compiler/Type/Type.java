@@ -68,12 +68,12 @@ public class Type {
 
     public boolean isNull() { return typeName.equals("null") && dim == 0; }
 
-    public int getByteSize(){
+    public int getRegisterSize(){
         int wise = 8;
-        if (isBool()) return wise;
-        else if (isInt()) return wise;
+
+        if (isNull()) return 0;
         else {
-            //now it is pointer
+            //now it is pointer or int, bool
             return wise;
         }
     }

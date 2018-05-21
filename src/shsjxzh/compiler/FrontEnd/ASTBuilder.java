@@ -25,7 +25,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         BlockNode emptyBlock = new BlockNode(pos,new ArrayList<>());
         //int
         declNodes.add( new ClassDeclNode(pos,"int",new ArrayList<>(),
-                new ArrayList<>(),null) );
+                new ArrayList<>(),null, true) );
 
         //string
         List<FuncDeclNode> stringMethod = new ArrayList<>();
@@ -54,11 +54,11 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         ord.setBuildIn(true);
         stringMethod.add(ord);
 
-        declNodes.add( new ClassDeclNode(pos, "string", new ArrayList<>(), stringMethod, null));
+        declNodes.add( new ClassDeclNode(pos, "string", new ArrayList<>(), stringMethod, null, true));
 
         //bool
         declNodes.add( new ClassDeclNode(pos,"bool",new ArrayList<>(),
-                new ArrayList<>(),null) );
+                new ArrayList<>(),null, true) );
 
         //void print(string str)
         List<VarDeclNode> printParams = new ArrayList<>();

@@ -8,6 +8,7 @@ public abstract class DeclNode extends ASTNode {
     public DeclNode(Position pos) {
         super(pos);
     }
+    public boolean isBuildIn = false;
 
     @Override
     public abstract void accept(ASTVisitor visitor);

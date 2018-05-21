@@ -10,6 +10,9 @@ public class ClassDeclNode extends DeclNode {
     private List<VarDeclNode> classMember;
     private List<FuncDeclNode> classMethod;
     private FuncDeclNode constructMethod;
+    private int allocSize;
+    //private boolean isbuildIn = false;
+    //private final int pointerSize = 8;
 
     public ClassDeclNode(Position pos, String className, List<VarDeclNode> classMember, List<FuncDeclNode> classMethod, FuncDeclNode constructMethod) {
         super(pos);
@@ -17,6 +20,23 @@ public class ClassDeclNode extends DeclNode {
         this.classMember = classMember;
         this.classMethod = classMethod;
         this.constructMethod = constructMethod;
+
+        //it is a little tricky, may need some change
+        int wise = 8;
+        this.allocSize = wise * classMember.size();
+    }
+
+    public ClassDeclNode(Position pos, String className, List<VarDeclNode> classMember, List<FuncDeclNode> classMethod, FuncDeclNode constructMethod, boolean buildin) {
+        super(pos);
+        this.className = className;
+        this.classMember = classMember;
+        this.classMethod = classMethod;
+        this.constructMethod = constructMethod;
+
+        //it is a little tricky, may need some change
+        int wise = 8;
+        this.allocSize = wise;
+        this.isBuildIn = buildin;
     }
 
     @Override
@@ -34,6 +54,10 @@ public class ClassDeclNode extends DeclNode {
 
     public FuncDeclNode getConstructMethod() {
         return constructMethod;
+    }
+
+    public int getAllocSize() {
+        return allocSize;
     }
 
     @Override

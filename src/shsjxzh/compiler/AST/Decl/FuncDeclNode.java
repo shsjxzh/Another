@@ -20,7 +20,6 @@ public class FuncDeclNode extends DeclNode {
         this.funcBlock = funcBlock;
         this.funcName = funcName;
         this.funcParams = funcParams;
-        this.buildIn = false;
     }
 
     public Type getFuncReturnType() {
@@ -45,20 +44,18 @@ public class FuncDeclNode extends DeclNode {
         visitor.visit(this);
     }
 
-    //return
-    private boolean buildIn;
-    public void setBuildIn(boolean buildIn) {
-        this.buildIn = buildIn;
+    public void setBuildIn(boolean isBuildIn) {
+        this.isBuildIn = isBuildIn;
     }
 
 
-    public FuncDeclNode(Position pos, Type funcReturnType, BlockNode funcBlock, String funcName, List<VarDeclNode> funcParams, boolean buildIn) {
+    public FuncDeclNode(Position pos, Type funcReturnType, BlockNode funcBlock, String funcName, List<VarDeclNode> funcParams, boolean isBuildIn) {
         super(pos);
         this.funcReturnType = funcReturnType;
         this.funcBlock = funcBlock;
         this.funcName = funcName;
         this.funcParams = funcParams;
-        this.buildIn = buildIn;
+        this.isBuildIn = isBuildIn;
     }
 }
 
