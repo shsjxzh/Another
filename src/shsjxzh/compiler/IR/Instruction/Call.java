@@ -20,6 +20,18 @@ public class Call extends Instruction {
         this.dest = dest;
     }
 
+    public Function getCallFunc() {
+        return callFunc;
+    }
+
+    public List<Value> getArgvs() {
+        return argvs;
+    }
+
+    public Register getDest() {
+        return dest;
+    }
+
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

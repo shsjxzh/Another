@@ -9,6 +9,10 @@ public class IntImme extends Value {
         this.value = value;
     }
 
+    public int getImmeValue() {
+        return value;
+    }
+
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

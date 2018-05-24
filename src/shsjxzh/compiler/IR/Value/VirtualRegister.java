@@ -6,7 +6,6 @@ public class VirtualRegister extends Register {
     public VirtualRegister(String name) {
         super(name);
     }
-
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

@@ -86,15 +86,17 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitProgram(MxParser.ProgramContext ctx) {
         List<DeclNode> declNodes = new ArrayList<>();
+        FuncDeclNode mainDecl = null;
         Position progPos = new Position(ctx);
         for (ParseTree child : ctx.decl()){
             DeclNode childNode = (DeclNode) visit(child);
-            declNodes.add(childNode);
+            if (!childNode.getName().equals("main")) declNodes.add(childNode);
+            else mainDecl = (FuncDeclNode) childNode;
         }
 
         initialize(progPos,declNodes);
 
-        return new ProgramNode(progPos,declNodes);
+        return new ProgramNode(progPos,declNodes,mainDecl);
     }
 
     // Decl

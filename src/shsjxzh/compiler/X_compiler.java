@@ -4,21 +4,24 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import shsjxzh.compiler.AST.*;
+import shsjxzh.compiler.BackEnd.IRPrinter;
 import shsjxzh.compiler.ErrorHandle.ParseTreeErrorListener;
 import shsjxzh.compiler.FrontEnd.*;
+import shsjxzh.compiler.IR.IRRoot;
 import shsjxzh.compiler.Parser.*;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 
-public class MidTerm {
+public class X_compiler {
     private ProgramNode ast;
+    private IRRoot irRoot;
 
     private InputStream printIn;
     private PrintStream printOut;
 
-    public MidTerm(InputStream printIn, PrintStream printOut) {
+    public X_compiler(InputStream printIn, PrintStream printOut) {
         this.printIn = printIn;
         this.printOut = printOut;
     }
@@ -30,6 +33,14 @@ public class MidTerm {
     private void semanticAnalysis() {
         SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
         ast.accept(semanticAnalyzer);
+    }
+
+    private void printIR() {irRoot.accept(new IRPrinter(printOut));}
+
+    private void buildIR() {
+        IRBuilder irBuilder = new IRBuilder();
+        ast.accept(irBuilder);
+        irRoot = irBuilder.getIrRoot();
     }
 
     private void buildAST() throws Exception {
@@ -46,7 +57,6 @@ public class MidTerm {
         parser.removeErrorListeners();
         parser.addErrorListener(ParseTreeErrorListener.INSTANCE);
 
-
         ParseTree tree = parser.program();  //build cst
 
         ASTBuilder astBuilder = new ASTBuilder();
@@ -57,12 +67,14 @@ public class MidTerm {
         buildAST();
         //printAST();
         semanticAnalysis();
+        buildIR();
+        printIR();
     }
 
     public static void main(String[] args) throws Exception{
         PrintStream out = System.out;
         //InputStream in = System.in;
         InputStream in = new FileInputStream("program.txt");
-        new MidTerm(in, System.out).run();
+        new X_compiler(in, System.out).run();
     }
 }

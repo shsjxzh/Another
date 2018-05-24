@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SemanticAnalyzer implements ASTVisitor {
+public class SemanticAnalyzer implements ASTVisitor{
     private GlobalScope globalScope;
     private Scope currentScope;
     private int blockNum, forNum, whileNum, ifNum;
@@ -136,6 +136,9 @@ public class SemanticAnalyzer implements ASTVisitor {
             }
         }
 
+        DeclNode mainDecl = node.getMainDecl();
+
+        if (mainDecl instanceof FuncDeclNode) preProcessFunc( (FuncDeclNode) mainDecl);
         for (DeclNode decl : decls) {
             if (decl instanceof FuncDeclNode){
                 preProcessFunc((FuncDeclNode) decl);
@@ -144,8 +147,6 @@ public class SemanticAnalyzer implements ASTVisitor {
                 preProssClass((ClassDeclNode) decl);
             }
         }
-
-        DeclNode mainDecl = globalScope.entities.get("main");
 
         //main check
         if (mainDecl == null) throw new ErrorHandler("missing main function", node.getPos());
@@ -159,6 +160,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         }
 
         //check all
+        check(mainDecl);
         for (DeclNode decl : decls) {
             check(decl);
         }
@@ -173,6 +175,7 @@ public class SemanticAnalyzer implements ASTVisitor {
                 }
             }
         }*/
+        
     }
 
     @Override
@@ -181,6 +184,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         currentScope = currentScope.childScope.get(node.getName());
         check(node.getFuncBlock());
         currentScope = currentScope.getParentScope();
+        
     }
 
     @Override
@@ -192,6 +196,7 @@ public class SemanticAnalyzer implements ASTVisitor {
             check(funcDeclNode);
         }
         currentScope = currentScope.getParentScope();
+        
     }
 
     @Override
@@ -212,11 +217,13 @@ public class SemanticAnalyzer implements ASTVisitor {
             throw new ErrorHandler("Error using of \"main\"", node.getPos());
         }
         currentScope.define(node);
+        
     }
 
     @Override
     public void visit(VarDeclStmtNode node) {
         check(node.getVarDecl());
+        
     }
 
     @Override
@@ -227,6 +234,7 @@ public class SemanticAnalyzer implements ASTVisitor {
             check(stmtNode);
         }
         currentScope = currentScope.getParentScope();
+        
     }
 
     @Override
@@ -234,6 +242,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         if (!currentScope.resolveBreakContinue()){
             throw new ErrorHandler("Error using of break or continue", node.getPos());
         }
+        
     }
 
     @Override
@@ -241,11 +250,13 @@ public class SemanticAnalyzer implements ASTVisitor {
         if (!currentScope.resolveBreakContinue()){
             throw new ErrorHandler("Error using of break or continue", node.getPos());
         }
+        
     }
 
     @Override
     public void visit(ExprStmtNode node) {
         checkAndInitType(node.expr);
+        
     }
 
     @Override
@@ -262,6 +273,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         checkAndInitType(node.getIter());
         check(node.getBody());
         currentScope = currentScope.getParentScope();
+        
     }
 
     @Override
@@ -280,6 +292,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         check(node.getThen());
         check(node.getOtherwise());
         currentScope = currentScope.getParentScope();
+        
     }
 
     @Override
@@ -288,6 +301,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         if (!currentScope.resolveReturn(node)){
             throw new ErrorHandler("Error return type", node.getPos());
         }
+        
     }
 
     @Override
@@ -300,26 +314,27 @@ public class SemanticAnalyzer implements ASTVisitor {
         }
         check(node.getBody());
         currentScope = currentScope.getParentScope();
+        
     }
 
     @Override
     public void visit(BoolLiteralNode node) {
-
+        
     }
 
     @Override
     public void visit(IntLiteralNode node) {
-
+        
     }
 
     @Override
     public void visit(NullLiteralNode node) {
-
+        
     }
 
     @Override
     public void visit(StringLiteralNode node) {
-
+        
     }
 
     @Override
@@ -378,7 +393,7 @@ public class SemanticAnalyzer implements ASTVisitor {
         if (!valid) {
             throw new ErrorHandler("Error type using or l-value needed", node.getPos());
         }
-
+        
     }
 
     @Override
@@ -409,6 +424,7 @@ public class SemanticAnalyzer implements ASTVisitor {
                 default:
         }
         if (!valid)  throw new ErrorHandler("Error type using or l-value needed", node.getPos());
+        
     }
 
     @Override
@@ -419,12 +435,14 @@ public class SemanticAnalyzer implements ASTVisitor {
         if (type.isNull()) throw new ErrorHandler("Error type using or l-value needed", node.getPos());
         if (type.isInt() && node.getBody().isLvalue()){ }
         else throw new ErrorHandler("Error type using or l-value needed", node.getPos());
+        
     }
 
     @Override
     public void visit(ArrayIndexNode node) {
         checkAndInitType(node.getArray());
         checkAndInitType(node.getIndex());
+        
     }
 
     @Override
@@ -439,7 +457,9 @@ public class SemanticAnalyzer implements ASTVisitor {
         else{
             throw new ErrorHandler("Undefined variable \"" + node.getName() + "\"", node.getPos());
         }
+        
     }
+
 
     @Override
     public void visit(ThisNode node) {
@@ -449,6 +469,7 @@ public class SemanticAnalyzer implements ASTVisitor {
             node.setThisDefinition((ClassDeclNode) entity);
         }
         else throw new ErrorHandler("Error using of \"This\"", node.getPos());
+        
     }
 
     @Override
@@ -472,6 +493,7 @@ public class SemanticAnalyzer implements ASTVisitor {
 
         //function params check;
         checkFuncParams(node.getFuncParams(), node.getFuncDefinition(), node.getPos());
+        
     }
 
     @Override
@@ -518,5 +540,6 @@ public class SemanticAnalyzer implements ASTVisitor {
         for (ExprNode exprNode : node.getExprDim()) {
             checkAndInitType(exprNode);
         }
+        
     }
 }

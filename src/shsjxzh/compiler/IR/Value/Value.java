@@ -1,7 +1,7 @@
 package shsjxzh.compiler.IR.Value;
 
-import shsjxzh.compiler.IR.IRVisitor;
+import shsjxzh.compiler.IR.IR;
 
-public abstract class Value {
-    public abstract void accept(IRVisitor visitor);
+public abstract class Value extends IR {
+
 }

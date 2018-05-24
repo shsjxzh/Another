@@ -34,6 +34,7 @@ public class ASTPrinter implements ASTVisitor {
         for (DeclNode decl : decls) {
             decl.accept(this);
         }
+        
     }
 
     //tested
@@ -59,7 +60,7 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("function body: ");
         if (node.getFuncBlock() != null) node.getFuncBlock().accept(this);
 
-        subIndent();
+        subIndent(); 
     }
 
     //tested
@@ -87,7 +88,7 @@ public class ASTPrinter implements ASTVisitor {
             method.accept(this);
         }
 
-        subIndent();
+        subIndent(); 
     }
 
     //tested
@@ -103,7 +104,7 @@ public class ASTPrinter implements ASTVisitor {
         if (node.getExpr() != null){
             node.getExpr().accept(this);
         }
-        subIndent();
+        subIndent(); 
     }
 
     //tested
@@ -115,21 +116,21 @@ public class ASTPrinter implements ASTVisitor {
         for (StmtNode stmt : stmts) {
             stmt.accept(this);
         }
-        subIndent();
+        subIndent(); 
     }
 
     @Override
     public void visit(BreakStmtNode node) {
         addIndent();
         myPrintln("BreakStmtNode");
-        subIndent();
+        subIndent(); 
     }
 
     @Override
     public void visit(ContinueStmtNode node) {
         addIndent();
         myPrintln("ContinueStmtNode");
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -139,7 +140,7 @@ public class ASTPrinter implements ASTVisitor {
 
         node.expr.accept(this);
 
-        subIndent();
+        subIndent(); 
     }
 
     //tested
@@ -160,7 +161,7 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("step: "); if (node.getIter() != null) node.getIter().accept(this);
         myPrintln("body: "); if (node.getBody() != null) node.getBody().accept(this);
 
-        subIndent();
+        subIndent(); 
     }
 
     //tested
@@ -173,7 +174,7 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("then: "); node.getThen().accept(this);
         myPrintln("otherwise: "); node.getOtherwise().accept(this);
 
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -181,14 +182,14 @@ public class ASTPrinter implements ASTVisitor {
         addIndent();
         myPrintln("VarDeclStmtNode:");
         node.getVarDecl().accept(this);
-        subIndent();
+        subIndent(); 
     }
 
     @Override
     public void visit(ReturnStmtNode node) {
         addIndent();
         myPrintln("ReturnStmtNode");
-        subIndent();
+        subIndent(); 
     }
 
     //tested
@@ -198,35 +199,35 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("WhileStmtNode:");
         myPrintln("cond: "); node.getCond().accept(this);
         myPrintln("body: "); node.getBody().accept(this);
-        subIndent();
+        subIndent(); 
     }
 
     @Override
     public void visit(BoolLiteralNode node) {
         addIndent();
         myPrintln("BoolLiteralNode: " + "bool value: " + node.getValue());
-        subIndent();
+        subIndent(); 
     }
 
     @Override
     public void visit(IntLiteralNode node) {
         addIndent();
         myPrintln("IntlLiteralNode: " + "int value: " + node.getValue());
-        subIndent();
+        subIndent(); 
     }
 
     @Override
     public void visit(NullLiteralNode node) {
         addIndent();
         myPrintln("nullLiteralNode");
-        subIndent();
+        subIndent(); 
     }
 
     @Override
     public void visit(StringLiteralNode node) {
         addIndent();
         myPrintln("StringLiteralNode: " + "value: " + node.getValue());
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -237,7 +238,7 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("left: "); node.getLeft().accept(this);
         myPrintln("right: "); node.getRight().accept(this);
 
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -246,7 +247,7 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("UnaryNode:");
         myPrintln("op: " + node.getOp());
         myPrintln("body"); node.getBody().accept(this);
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -255,7 +256,7 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("SuffixNode:");
         myPrintln("op: " + node.getOp());
         myPrintln("body"); node.getBody().accept(this);
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -264,7 +265,7 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("ArrayIndexNode:");
         myPrintln("array: "); node.getArray().accept(this);
         myPrintln("index: "); node.getIndex().accept(this);
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -272,7 +273,7 @@ public class ASTPrinter implements ASTVisitor {
         addIndent();
         myPrintln("VariableNode:");
         myPrintln("name: " + node.getName());
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -285,7 +286,7 @@ public class ASTPrinter implements ASTVisitor {
         for (ExprNode param : params) {
             param.accept(this);
         }
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -294,7 +295,7 @@ public class ASTPrinter implements ASTVisitor {
         myPrintln("MemberAccessNode:");
         myPrintln("object: "); node.getObject().accept(this);
         myPrintln("memberRef: " + node.getMemberRef());
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -308,7 +309,7 @@ public class ASTPrinter implements ASTVisitor {
         for (ExprNode methodParam : methodParams) {
             methodParam.accept(this);
         }
-        subIndent();
+        subIndent(); 
     }
 
     @Override
@@ -322,13 +323,13 @@ public class ASTPrinter implements ASTVisitor {
             exprDim.accept(this);
         }
 
-        subIndent();
+        subIndent(); 
     }
 
     @Override
     public void visit(ThisNode node) {
         addIndent();
         myPrintln("ThisNode");
-        subIndent();
+        subIndent(); 
     }
 }

@@ -16,6 +16,18 @@ public class Branch extends Instruction {
         this.otherwise = otherwise;
     }
 
+    public Value getCond() {
+        return cond;
+    }
+
+    public BasicBlock getThen() {
+        return then;
+    }
+
+    public BasicBlock getOtherwise() {
+        return otherwise;
+    }
+
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

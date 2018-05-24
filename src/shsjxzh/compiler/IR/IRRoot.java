@@ -8,12 +8,13 @@ import shsjxzh.compiler.IR.Value.VirtualRegister;
 
 import java.util.*;
 
-public class IRRoot {
+public class IRRoot extends IR{
     public Map<String, Function> functionMap = new LinkedHashMap<>();
     //to get rid of redundancy
     public Map<String, StaticString> stringMap = new LinkedHashMap<>();
     public List<StaticData> staticDataList = new ArrayList<>();
-    public int regCount = 0;
+    private int regCount = 0;
+    private int BBCount = 0;
 
     //be careful to add sth
     public IRRoot() {
@@ -21,21 +22,16 @@ public class IRRoot {
 
        //for global variable initialize
        //we will simplify it later
-       Function init = new Function("__init");
+       Function init = new Function("__init", Integer.toString(getBBCountAndIncrease()));
        functionMap.put("__init", init);
+    }
 
-       BasicBlock initBB = new BasicBlock("__init");
-       //instruction
-       VirtualRegister reg = new VirtualRegister(Integer.toString(regCount));
-       Call mainCall = new Call(initBB,init, new LinkedList<>(),reg);
-       Return mainReturn = new Return(initBB, reg);
-       mainCall.LinkNext(mainReturn);
+    public int getRegCountAndIncrease(){
+        return ++regCount;
+    }
 
-       initBB.setHead(mainCall);
-       initBB.setLast(mainReturn);
-
-       init.setStartBB(initBB);
-       //??init.setExitBB(initBB);
+    public int getBBCountAndIncrease(){
+        return ++BBCount;
     }
 
     public void accept(IRVisitor visitor){

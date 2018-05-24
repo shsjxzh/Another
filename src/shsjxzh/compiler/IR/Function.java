@@ -1,15 +1,21 @@
 package shsjxzh.compiler.IR;
 
 import shsjxzh.compiler.AST.Decl.FuncDeclNode;
+import shsjxzh.compiler.IR.Value.VirtualRegister;
 
-public class Function{
+import java.util.ArrayList;
+import java.util.List;
+
+public class Function extends IR{
     private String name;
     private BasicBlock startBB;
-    private BasicBlock exitBB;
+    public List<VirtualRegister> funcParams = new ArrayList<>();
+    //private BasicBlock exitBB;
     private int returnSize;
 
-    public Function(String name) {
+    public Function(String name, String startBlockName) {
         this.name = name;
+        startBB = new BasicBlock(startBlockName,this);
     }
 
     public void setName(String name) {
@@ -19,10 +25,10 @@ public class Function{
     public void setStartBB(BasicBlock startBB) {
         this.startBB = startBB;
     }
-
+    /*
     public void setExitBB(BasicBlock exitBB) {
         this.exitBB = exitBB;
-    }
+    }*/
 
     public void setReturnSize(int returnSize) {
         this.returnSize = returnSize;
@@ -36,11 +42,16 @@ public class Function{
         return startBB;
     }
 
-    public BasicBlock getExitBB() {
+    /*public BasicBlock getExitBB() {
         return exitBB;
-    }
+    }*/
 
     public int getReturnSize() {
         return returnSize;
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

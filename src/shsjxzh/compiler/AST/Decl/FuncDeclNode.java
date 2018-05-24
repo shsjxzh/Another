@@ -4,6 +4,7 @@ import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Stmt.BlockNode;
 import shsjxzh.compiler.AST.Stmt.ReturnStmtNode;
 import shsjxzh.compiler.AST.tool.Position;
+import shsjxzh.compiler.IR.Function;
 import shsjxzh.compiler.Type.Type;
 
 import java.util.List;
@@ -13,6 +14,7 @@ public class FuncDeclNode extends DeclNode {
     private BlockNode funcBlock;
     private String funcName;
     private List<VarDeclNode> funcParams;
+    public Function irFunction;
 
     public FuncDeclNode(Position pos, Type funcReturnType, BlockNode funcBlock, String funcName, List<VarDeclNode> funcParams) {
         super(pos);

@@ -4,11 +4,15 @@ import shsjxzh.compiler.IR.BasicBlock;
 import shsjxzh.compiler.IR.IRVisitor;
 
 public class Jump extends Instruction{
-    private BasicBlock nextBB;
+    private BasicBlock next;
 
-    public Jump(BasicBlock curBB, BasicBlock nextBB) {
+    public Jump(BasicBlock curBB, BasicBlock next) {
         super(curBB);
-        this.nextBB = nextBB;
+        this.next = next;
+    }
+
+    public BasicBlock getNextBB() {
+        return next;
     }
 
     @Override

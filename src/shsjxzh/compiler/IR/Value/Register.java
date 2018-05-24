@@ -7,4 +7,8 @@ public abstract class Register extends Value {
     public Register(String name) {
         this.name = name;
     }
+
+    public String getName() {
+        return name;
+    }
 }

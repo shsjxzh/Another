@@ -16,6 +16,14 @@ public class Move extends Instruction {
         this.source = source;
     }
 
+    public Register getDest() {
+        return dest;
+    }
+
+    public Value getSource() {
+        return source;
+    }
+
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

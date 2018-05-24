@@ -12,6 +12,10 @@ public class Return extends Instruction {
         this.returnValue = returnValue;
     }
 
+    public Value getReturnValue() {
+        return returnValue;
+    }
+
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
