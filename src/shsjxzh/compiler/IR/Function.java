@@ -12,14 +12,17 @@ public class Function extends IR{
     public List<VirtualRegister> funcParams = new ArrayList<>();
     //private BasicBlock exitBB;
     private int returnSize;
+    private int returnNum;
 
-    public Function(String name, String startBlockName) {
+    public Function(String name, String startBlockName,int returnNum, int returnSize) {
         this.name = name;
         startBB = new BasicBlock(startBlockName,this);
+        this.returnNum = returnNum;
+        this.returnSize = returnSize;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public int getReturnStmtNum() {
+        return returnNum;
     }
 
     public void setStartBB(BasicBlock startBB) {
@@ -30,9 +33,9 @@ public class Function extends IR{
         this.exitBB = exitBB;
     }*/
 
-    public void setReturnSize(int returnSize) {
-        this.returnSize = returnSize;
-    }
+    //public void setReturnSize(int returnSize) {
+      //  this.returnSize = returnSize;
+    //}
 
     public String getName() {
         return name;

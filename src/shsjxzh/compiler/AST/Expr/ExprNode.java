@@ -34,6 +34,9 @@ public abstract class ExprNode extends ASTNode {
     public BasicBlock ifTrue = null;
     public BasicBlock ifFalse = null;
 
+    //to avoid useless ir
+    //public boolean hasSideEffect = false;
+
     @Override
     public abstract void accept(ASTVisitor visitor) ;
 }

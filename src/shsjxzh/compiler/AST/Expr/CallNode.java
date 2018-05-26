@@ -15,6 +15,7 @@ public class CallNode extends ExprNode{
         super(pos);
         this.funcName = funcName;
         this.funcParams = funcParams;
+        //this.hasSideEffect = true;
     }
 
     public String getFuncName() {

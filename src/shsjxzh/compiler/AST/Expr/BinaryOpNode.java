@@ -23,6 +23,9 @@ public class BinaryOpNode extends ExprNode{
         this.left = left;
         this.right = right;
         this.op = op;
+        //if (op == BinaryOp.ASSIGN){
+        //    this.hasSideEffect = true;
+        //}
     }
 
     public ExprNode getLeft() {

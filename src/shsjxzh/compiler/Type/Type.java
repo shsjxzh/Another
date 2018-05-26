@@ -78,6 +78,10 @@ public class Type {
         }
     }
 
+    public int getTypeMemSize(){
+        return typeDefinition.getAllocSize();
+    }
+
     @Override
     public String toString() {
         return ("type name: " + typeName + " dim: " + dim);

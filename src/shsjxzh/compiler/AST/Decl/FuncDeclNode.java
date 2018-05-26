@@ -14,6 +14,8 @@ public class FuncDeclNode extends DeclNode {
     private BlockNode funcBlock;
     private String funcName;
     private List<VarDeclNode> funcParams;
+
+    public int returnNum;
     public Function irFunction;
 
     public FuncDeclNode(Position pos, Type funcReturnType, BlockNode funcBlock, String funcName, List<VarDeclNode> funcParams) {
@@ -22,6 +24,7 @@ public class FuncDeclNode extends DeclNode {
         this.funcBlock = funcBlock;
         this.funcName = funcName;
         this.funcParams = funcParams;
+        returnNum = 0;
     }
 
     public Type getFuncReturnType() {

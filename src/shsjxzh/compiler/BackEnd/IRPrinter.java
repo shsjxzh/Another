@@ -57,6 +57,11 @@ public class IRPrinter implements IRVisitor {
         for (Instruction itr = node.getHeadIns(); itr!= null; itr = itr.Next()){
             PrintIR(itr);
         }
+
+        //try to print
+        PrintIR(node.getAdjacentBB());
+
+        node.succssorBBMap.values().forEach(this::visit);
     }
 
     @Override
@@ -76,17 +81,17 @@ public class IRPrinter implements IRVisitor {
 
     @Override
     public void visit(Jump node) {
-        myPrintln("jump " + node.getNextBB().getName());
-        PrintIR(node.getNextBB());
+        myPrintln("jump " + node.getNextLabel());
+        //PrintIR(node.getBelongBB().succssorBBMap.get(node.getNextLabel()));
     }
 
     @Override
     public void visit(Branch node) {
         myPrint("branch ");
         PrintIR(node.getCond());
-        myPrintln(node.getThen().getName() + " " + node.getOtherwise().getName());
-        PrintIR(node.getThen());
-        PrintIR(node.getOtherwise());
+        this.out.println(node.getThenLabel() + " " + node.getOtherwiseLabel());
+        //PrintIR(node.getThen());
+        //PrintIR(node.getOtherwise());
     }
 
     @Override
@@ -100,7 +105,7 @@ public class IRPrinter implements IRVisitor {
     public void visit(Call node) {
         myPrint("");
         PrintIR(node.getDest());
-        this.out.print(" = call " + node.getCallFunc().getName());
+        this.out.print("= call " + node.getCallFunc().getName());
         for (Value value : node.getArgvs()) {
             PrintIR(value);
         }
@@ -117,7 +122,7 @@ public class IRPrinter implements IRVisitor {
         myPrint("");
         //the print of reg will do nothing with the indent
         PrintIR(node.getDest());
-        this.out.print(" = move ");
+        this.out.print("= move ");
         PrintIR(node.getSource());
         myPrintln("");
     }

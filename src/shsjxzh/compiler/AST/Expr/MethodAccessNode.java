@@ -17,6 +17,7 @@ public class MethodAccessNode extends ExprNode {
         this.object = object;
         this.methodName = methodName;
         this.methodParams = methodParams;
+        //this.hasSideEffect = true;
     }
 
     public ExprNode getObject() {

@@ -5,12 +5,12 @@ import shsjxzh.compiler.IR.IR;
 import shsjxzh.compiler.IR.IRVisitor;
 
 public abstract class Instruction extends IR {
-    protected BasicBlock curBB;
+    protected BasicBlock belongBB;
     protected Instruction prev = null;
     protected Instruction next = null;
 
-    public Instruction(BasicBlock curBB) {
-        this.curBB = curBB;
+    public Instruction(BasicBlock belongBB) {
+        this.belongBB = belongBB;
     }
 
     public void LinkNext(Instruction ins){
@@ -21,6 +21,10 @@ public abstract class Instruction extends IR {
     public void LinkPrev(Instruction ins){
         this.prev = ins;
         ins.next = this;
+    }
+
+    public BasicBlock getBelongBB() {
+        return belongBB;
     }
 
     public Instruction Next(){

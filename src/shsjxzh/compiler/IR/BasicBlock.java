@@ -1,7 +1,9 @@
 package shsjxzh.compiler.IR;
 
-
 import shsjxzh.compiler.IR.Instruction.Instruction;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class BasicBlock extends IR{
     private Instruction headIns = null;
@@ -13,6 +15,10 @@ public class BasicBlock extends IR{
     //private BasicBlock rightBB = null;
     private Function belongFunc;
     private boolean finish;
+    private BasicBlock adjacentBB;
+
+    public Map<String, BasicBlock> predecessorBBMap = new LinkedHashMap<>();
+    public Map<String, BasicBlock> succssorBBMap = new LinkedHashMap<>();
 
     public BasicBlock(String name, Function belongFunc) {
         this.name = name;
@@ -42,13 +48,18 @@ public class BasicBlock extends IR{
         return finish;
     }
 
-    /*public void setLeftBB(BasicBlock leftBB) {
-        this.leftBB = leftBB;
+    public void LinkNextBB(BasicBlock next){
+        succssorBBMap.put(next.getName(), next);
+        next.predecessorBBMap.put(name, this);
     }
 
-    public void setRightBB(BasicBlock rightBB) {
-        this.rightBB = rightBB;
-    }*/
+    public BasicBlock getAdjacentBB() {
+        return adjacentBB;
+    }
+
+    public void setAdjacentBB(BasicBlock adjacentBB) {
+        this.adjacentBB = adjacentBB;
+    }
 
     public Instruction getHeadIns() {
         return headIns;

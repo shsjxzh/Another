@@ -8,6 +8,9 @@ import shsjxzh.compiler.AST.tool.Position;
 public class SuffixNode extends UnaryNode {
     public SuffixNode(Position pos, UnaryOp op, ExprNode body) {
         super(pos, op, body);
+        /*if (op == UnaryOp.DEC || op == UnaryOp.INC){
+            this.hasSideEffect = true;
+        }*/
     }
 
     @Override

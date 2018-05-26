@@ -52,7 +52,6 @@ public class LocalScope extends Scope{
         return null;
     }
 
-    //ToDo "this"
     @Override
     public DeclNode resolveThis() {
         Scope tmp = this;
@@ -109,10 +108,10 @@ public class LocalScope extends Scope{
                     }
                     else return false;
                 }*/
-                if (( (leftType.equals(rightType))
+                if ( (leftType.equals(rightType))
                         || (leftType.isArray() && rightType.isNull())
-                        || (!leftType.isBuildInType() && rightType.isNull()) )
-                        ){
+                        || (!leftType.isBuildInType() && rightType.isNull()) ) {
+                    ++funcNode.returnNum;
                     return true;
                 }
             }

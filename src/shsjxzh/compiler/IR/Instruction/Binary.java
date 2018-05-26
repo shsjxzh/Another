@@ -8,7 +8,7 @@ import shsjxzh.compiler.IR.Value.Value;
 public class Binary extends Instruction {
     public enum BinaryOp{
         Add, Sub, Mul, Div, Mod, Shl, Shr,
-        And/*(bitwise)*/, Or/*(bitwise)*/, Xor
+        BitAnd/*(bitwise)*/, BitOr/*(bitwise)*/, Xor
     }
 
     private BinaryOp op;

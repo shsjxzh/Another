@@ -22,7 +22,8 @@ public class IRRoot extends IR{
 
        //for global variable initialize
        //we will simplify it later
-       Function init = new Function("__init", Integer.toString(getBBCountAndIncrease()));
+       Function init = new Function("__init", "B_" + getBBCountAndIncrease(), 1, 8);
+       //init.setReturnSize(8);  //This is the size of int
        functionMap.put("__init", init);
     }
 

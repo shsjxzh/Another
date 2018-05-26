@@ -14,6 +14,9 @@ public class UnaryNode extends ExprNode {
         super(pos);
         this.op = op;
         this.body = body;
+        /*if (op == UnaryOp.DEC || op == UnaryOp.INC){
+            this.hasSideEffect = true;
+        }*/
     }
 
     @Override
