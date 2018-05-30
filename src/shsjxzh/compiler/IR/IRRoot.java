@@ -10,6 +10,7 @@ import java.util.*;
 
 public class IRRoot extends IR{
     public Map<String, Function> functionMap = new LinkedHashMap<>();
+    public Map<String, Function> buildInFunctionMap = new LinkedHashMap<>();
     //to get rid of redundancy
     public Map<String, StaticString> stringMap = new LinkedHashMap<>();
     public List<StaticData> staticDataList = new ArrayList<>();

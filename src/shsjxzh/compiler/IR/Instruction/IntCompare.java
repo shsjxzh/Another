@@ -23,6 +23,22 @@ public class IntCompare extends Instruction {
         this.right = right;
     }
 
+    public CompareOp getOp() {
+        return op;
+    }
+
+    public Register getDest() {
+        return dest;
+    }
+
+    public Value getLeft() {
+        return left;
+    }
+
+    public Value getRight() {
+        return right;
+    }
+
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

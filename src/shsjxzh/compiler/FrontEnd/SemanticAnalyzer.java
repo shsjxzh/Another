@@ -435,14 +435,13 @@ public class SemanticAnalyzer implements ASTVisitor{
         if (type.isNull()) throw new ErrorHandler("Error type using or l-value needed", node.getPos());
         if (type.isInt() && node.getBody().isLvalue()){ }
         else throw new ErrorHandler("Error type using or l-value needed", node.getPos());
-        
     }
 
     @Override
     public void visit(ArrayIndexNode node) {
         checkAndInitType(node.getArray());
         checkAndInitType(node.getIndex());
-        
+        if (!node.getIndex().getExprType().isInt()) throw new ErrorHandler("the dim must be int type!",node.getIndex().getPos());
     }
 
     @Override
@@ -457,7 +456,6 @@ public class SemanticAnalyzer implements ASTVisitor{
         else{
             throw new ErrorHandler("Undefined variable \"" + node.getName() + "\"", node.getPos());
         }
-        
     }
 
 
@@ -469,7 +467,6 @@ public class SemanticAnalyzer implements ASTVisitor{
             node.setThisDefinition((ClassDeclNode) entity);
         }
         else throw new ErrorHandler("Error using of \"This\"", node.getPos());
-        
     }
 
     @Override
@@ -539,7 +536,7 @@ public class SemanticAnalyzer implements ASTVisitor{
         checkTypeDefinition(node.getExprType(),node.getPos());
         for (ExprNode exprNode : node.getExprDim()) {
             checkAndInitType(exprNode);
+            if (!exprNode.getExprType().isInt()) throw new ErrorHandler("the dim must be int type!",exprNode.getPos());
         }
-        
     }
 }

@@ -7,7 +7,7 @@ import shsjxzh.compiler.IR.Value.Value;
 
 public class Unary extends Instruction {
     public enum UnaryOp{
-        Neg, Not/*(bitwise)*/, Inc, Dec
+        Neg, BitNot/*(bitwise)*/
     }
 
     private UnaryOp op;
@@ -19,6 +19,18 @@ public class Unary extends Instruction {
         this.op = op;
         this.dest = dest;
         this.value = value;
+    }
+
+    public UnaryOp getOp() {
+        return op;
+    }
+
+    public Register getDest() {
+        return dest;
+    }
+
+    public Value getValue() {
+        return value;
     }
 
     @Override

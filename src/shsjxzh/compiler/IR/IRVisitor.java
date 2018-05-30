@@ -14,8 +14,10 @@ public interface IRVisitor {
     //instruction
     //Arithmetic
     void visit(Binary node);         //Add, Sub, Mul, Div, Mod, Shl, Shr, And(bitwise), Or(bitwise), Xor
-    void visit(Unary node);          //Neg, Not(bitwise), Inc, Dec
+    void visit(Unary node);          //Neg, Not(bitwise)
     void visit(IntCompare node);     //EQ, NE, GT, GE, LT, LE
+    void visit(Inc node);
+    void visit(Dec node);
     //Control
     void visit(Jump node);
     void visit(Branch node);

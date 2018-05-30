@@ -2,6 +2,7 @@ package shsjxzh.compiler.IR.Instruction;
 
 import shsjxzh.compiler.IR.BasicBlock;
 import shsjxzh.compiler.IR.IRVisitor;
+import shsjxzh.compiler.IR.Value.IntImme;
 import shsjxzh.compiler.IR.Value.Register;
 import shsjxzh.compiler.IR.Value.Value;
 
@@ -12,7 +13,7 @@ public class Load extends Instruction {
     private Register base;
     private Register index;
     private int scale;
-    private Value displacement;
+    private IntImme displacement;
 
     //how many bytes will I take
     /*
@@ -24,7 +25,7 @@ public class Load extends Instruction {
         ByteSize = byteSize;
     }*/
 
-    public Load(BasicBlock belongBB, Register dest, Register base, Register index, int scale, Value displacement) {
+    public Load(BasicBlock belongBB, Register dest, Register base, Register index, int scale, IntImme displacement) {
         super(belongBB);
         this.dest = dest;
         this.base = base;
@@ -33,6 +34,27 @@ public class Load extends Instruction {
         this.displacement = displacement;
     }
 
+    public Register getDest() {
+        return dest;
+    }
+
+    public Register getBase() {
+        return base;
+    }
+
+    public Register getIndex() {
+        return index;
+    }
+
+    public int getScale() {
+        return scale;
+    }
+
+    public IntImme getDisplacement() {
+        return displacement;
+    }
+
+    /*
     public void setBase(Register base) {
         this.base = base;
     }
@@ -47,7 +69,7 @@ public class Load extends Instruction {
 
     public void setDisplacement(Value displacement) {
         this.displacement = displacement;
-    }
+    }*/
 
     @Override
     public void accept(IRVisitor visitor) {

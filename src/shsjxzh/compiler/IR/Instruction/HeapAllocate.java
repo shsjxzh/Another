@@ -6,7 +6,7 @@ import shsjxzh.compiler.IR.Value.Register;
 import shsjxzh.compiler.IR.Value.Value;
 
 public class HeapAllocate extends Instruction {
-    //store the address
+    //return the address of the first element
     private Register dest;
     private Value size;
 
@@ -14,6 +14,14 @@ public class HeapAllocate extends Instruction {
         super(curBB);
         this.dest = dest;
         this.size = size;
+    }
+
+    public Register getDest() {
+        return dest;
+    }
+
+    public Value getSize() {
+        return size;
     }
 
     @Override

@@ -13,21 +13,29 @@ public class Function extends IR{
     //private BasicBlock exitBB;
     private int returnSize;
     private int returnNum;
+    private boolean buildIn;
+
+    public Function(String name){
+        this.name = name;
+        buildIn = true;
+    }
 
     public Function(String name, String startBlockName,int returnNum, int returnSize) {
         this.name = name;
         startBB = new BasicBlock(startBlockName,this);
         this.returnNum = returnNum;
         this.returnSize = returnSize;
+        buildIn = false;
     }
 
     public int getReturnStmtNum() {
         return returnNum;
     }
 
-    public void setStartBB(BasicBlock startBB) {
-        this.startBB = startBB;
+    public boolean isBuildIn() {
+        return buildIn;
     }
+
     /*
     public void setExitBB(BasicBlock exitBB) {
         this.exitBB = exitBB;

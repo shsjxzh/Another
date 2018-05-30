@@ -24,6 +24,22 @@ public class Binary extends Instruction {
         this.right = right;
     }
 
+    public BinaryOp getOp() {
+        return op;
+    }
+
+    public Register getDest() {
+        return dest;
+    }
+
+    public Value getLeft() {
+        return left;
+    }
+
+    public Value getRight() {
+        return right;
+    }
+
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

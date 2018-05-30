@@ -4,6 +4,8 @@ import shsjxzh.compiler.AST.ASTNode;
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.tool.Position;
 import shsjxzh.compiler.IR.BasicBlock;
+import shsjxzh.compiler.IR.Value.IntImme;
+import shsjxzh.compiler.IR.Value.Register;
 import shsjxzh.compiler.IR.Value.Value;
 import shsjxzh.compiler.Type.Type;
 
@@ -34,8 +36,11 @@ public abstract class ExprNode extends ASTNode {
     public BasicBlock ifTrue = null;
     public BasicBlock ifFalse = null;
 
-    //to avoid useless ir
-    //public boolean hasSideEffect = false;
+    //for get address
+    public Register Base = null;
+    public Register Index = null;
+    public IntImme displacement = null;
+    public int scale = 0;
 
     @Override
     public abstract void accept(ASTVisitor visitor) ;
