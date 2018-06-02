@@ -48,6 +48,7 @@ public class IRBuilder implements ASTVisitor {
         curBB.finish(new Branch(curBB, node.regOrImm, node.ifTrue.getName(),node.ifFalse.getName()));
         curBB.LinkNextBB(node.ifTrue);
         curBB.LinkNextBB(node.ifFalse);
+        curBB.setAdjacentBB(node.ifTrue);
     }
 
     private void generateIR(ASTNode node){
@@ -329,9 +330,16 @@ public class IRBuilder implements ASTVisitor {
             //curBB.append(new Move(curBB, curReturnReg, node.getReExpr().regOrImm));
 
             assignNonMemop(curReturnReg, node.getReExpr().regOrImm, node.getReExpr());
-
-            curBB.finish(new Jump(curBB, curReturnBB.getName()));
             curBB.LinkNextBB(curReturnBB);
+
+            if (curReturnBB.predecessorBBMap.size() == 1){
+                curBB.setAdjacentBB(curReturnBB);
+                curBB.finish();
+            }
+            else {
+                curBB.finish(new Jump(curBB, curReturnBB.getName()));
+            }
+
         }
         //curReturnBB.append(new Return(curBB, c));
     }
@@ -385,6 +393,7 @@ public class IRBuilder implements ASTVisitor {
         BasicBlock forMerge = new BasicBlock("B_merge_" + irRoot.getBBCountAndIncrease(), curFunc);
 
         curBB.LinkNextBB(forCond);
+        curBB.finish();
         curBB.setAdjacentBB(forCond);
 
         node.getCond().ifTrue = forBody;
@@ -523,12 +532,16 @@ public class IRBuilder implements ASTVisitor {
         if (inLogicalGeneration(node)){
             //when it is the leaf of condition
             if (node.getValue()) {
-                curBB.finish(new Jump(curBB, node.ifTrue.getName()));
+                //Todo !! be careful!!
+                //curBB.finish(new Jump(curBB, node.ifTrue.getName()));
                 curBB.LinkNextBB(node.ifTrue);
+                curBB.setAdjacentBB(node.ifTrue);
             }
             else {
-                curBB.finish(new Jump(curBB, node.ifFalse.getName()));
+                //Todo !! be careful!!
+                //curBB.finish(new Jump(curBB, node.ifFalse.getName()));
                 curBB.LinkNextBB(node.ifFalse);
+                curBB.setAdjacentBB(node.ifFalse);
             }
         }
     }
@@ -667,7 +680,7 @@ public class IRBuilder implements ASTVisitor {
                 tmpReg1 = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
                 curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, tmpReg1));
                 curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringEqual"), argvs, destReg));
-                curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, destReg, tmpReg1));
+                curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, tmpReg1));
                 break;
             case GE:
                 argvs.add(node.getRight().regOrImm);
@@ -675,7 +688,7 @@ public class IRBuilder implements ASTVisitor {
                 tmpReg1 = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
                 curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, tmpReg1));
                 curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringEqual"), argvs, destReg));
-                curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, destReg, tmpReg1));
+                curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, tmpReg1));
                 break;
                 default:
                     throw new RuntimeException("Invalid string operation");
@@ -698,16 +711,43 @@ public class IRBuilder implements ASTVisitor {
             case NEQ: op = IntCompare.CompareOp.NE; break;
         }
 
-        VirtualRegister reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
-        curBB.append(new IntCompare(curBB, op, reg, node.getLeft().regOrImm, node.getRight().regOrImm));
+        //thinking about the type of the oprend
+        VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        if (node.getLeft().regOrImm instanceof IntImme ){
+            if (node.getRight().regOrImm instanceof IntImme){
+                int l = ((IntImme) node.getLeft().regOrImm).getImmeValue();
+                int r = ((IntImme) node.getRight().regOrImm).getImmeValue();
+                boolean result = false;
+                switch (node.getOp()){
+                    case GE: result = l >= r; break;
+                    case LE: result = l <= r; break;
+                    case GT: result = l > r; break;
+                    case LT: result = l < r; break;
+                    case EQ: result = l == r; break;
+                    case NEQ: result = l != r; break;
+                }
+
+                if (result) curBB.append(new Move(curBB, destReg, new IntImme(1)));
+                else curBB.append(new Move(curBB, destReg, new IntImme(0)));
+            }
+            else {
+                //the right type is a register
+                curBB.append(new IntCompare(curBB, op, destReg, node.getLeft().regOrImm, node.getRight().regOrImm));
+            }
+        }
+        else {
+            curBB.append(new IntCompare(curBB, op, destReg, node.getLeft().regOrImm, node.getRight().regOrImm));
+        }
+
         //in a expr
-        node.regOrImm = reg;
+        node.regOrImm = destReg;
 
         if (inLogicalGeneration(node)){
             //the leaf of the condition
-            curBB.finish(new Branch(curBB, reg, node.ifTrue.getName(), node.ifFalse.getName()));
+            curBB.finish(new Branch(curBB, destReg, node.ifTrue.getName(), node.ifFalse.getName()));
             curBB.LinkNextBB(node.ifTrue);
             curBB.LinkNextBB(node.ifFalse);
+            curBB.setAdjacentBB(node.ifTrue);
         }
     }
 
@@ -748,9 +788,41 @@ public class IRBuilder implements ASTVisitor {
             default:
                 throw new RuntimeException("Unknown Binary operator");
         }
-        VirtualRegister reg = new VirtualRegister("Reg_"+ irRoot.getRegCountAndIncrease());
-        node.regOrImm = reg;
-        curBB.append(new Binary(curBB, op, reg, node.getLeft().regOrImm, node.getRight().regOrImm));
+
+        VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        if (node.getLeft().regOrImm instanceof IntImme ){
+            if (node.getRight().regOrImm instanceof IntImme){
+                int l = ((IntImme) node.getLeft().regOrImm).getImmeValue();
+                int r = ((IntImme) node.getRight().regOrImm).getImmeValue();
+                int result;
+                switch (node.getOp()){
+                    case R_SHIFT: result = l >> r; break;   //java's ">>" is arithmetical
+                    case L_SHIFT: result = l << r; break;
+                    case BIT_AND: result = l & r; break;
+                    case BIT_OR:  result = l | r; break;
+                    case XOR:     result = l ^ r; break;
+                    case MOD:     result = l % r; break;
+                    case MUL:     result = l * r; break;
+                    case DIV:     result = l / r; break;
+                    case SUB:     result = l - r; break;
+                    case ADD:     result = l + r; break;
+                    default:
+                        throw new RuntimeException("Unknown Binary operator");
+                }
+                curBB.append(new Move(curBB, destReg, new IntImme(result)));
+            }
+            else {
+                //the right type is a register
+                curBB.append(new Move(curBB, destReg, node.getLeft().regOrImm));
+                curBB.append(new Binary(curBB, op, destReg, node.getRight().regOrImm));
+            }
+        }
+        else {
+            curBB.append(new Move(curBB, destReg, node.getRight().regOrImm));
+            curBB.append(new Binary(curBB, op, destReg, node.getLeft().regOrImm));
+        }
+        //in a expr
+        node.regOrImm = destReg;
     }
 
     /*
@@ -866,13 +938,15 @@ public class IRBuilder implements ASTVisitor {
                 generateIR(node.getBody());
                 reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
                 node.regOrImm = reg;
-                curBB.append(new Unary(curBB, Unary.UnaryOp.BitNot, reg, node.getBody().regOrImm));
+                curBB.append(new Move(curBB, reg, node.getBody().regOrImm));
+                curBB.append(new Unary(curBB, Unary.UnaryOp.BitNot, reg));
                 break;
             case NEG:
                 generateIR(node.getBody());
                 reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
                 node.regOrImm = reg;
-                curBB.append(new Unary(curBB, Unary.UnaryOp.BitNot, reg, node.getBody().regOrImm));
+                curBB.append(new Move(curBB, reg, node.getBody().regOrImm));
+                curBB.append(new Unary(curBB, Unary.UnaryOp.BitNot, reg));
                 break;
             case INC:
                 //set SideEffect
@@ -1006,6 +1080,7 @@ public class IRBuilder implements ASTVisitor {
         curBB.finish(new Branch(curBB, cmpReg, Body.getName(), Merge.getName()));
         curBB.LinkNextBB(Body);
         curBB.LinkNextBB(Merge);
+        curBB.setAdjacentBB(Body);
 
         //get the current dim
         ExprNode curExprDim = arrayDim.get(curDim);
@@ -1014,8 +1089,9 @@ public class IRBuilder implements ASTVisitor {
         //link the Body!!
         curBB = Body;
         VirtualRegister tmpAlloc = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
-        curBB.append(new Binary(curBB, Binary.BinaryOp.Mul, tmpAlloc, curExprDim.regOrImm, new IntImme(8)/*the size of build in type or pointer*/));
-        curBB.append(new Binary(curBB, Binary.BinaryOp.Add, tmpAlloc, tmpAlloc, new IntImme(intSize)));
+        curBB.append(new Move(curBB, tmpAlloc, new IntImme(8)/*the size of build in type or pointer*/));
+        curBB.append(new Binary(curBB, Binary.BinaryOp.Mul, tmpAlloc, curExprDim.regOrImm));
+        curBB.append(new Binary(curBB, Binary.BinaryOp.Add, tmpAlloc, new IntImme(intSize)));
         curBB.append(new HeapAllocate(curBB, tmpAlloc, tmpAlloc));
         curBB.append(new Store(curBB, curExprDim.regOrImm, tmpAlloc, null, 0, null));
         //save the tmp alloc address to memory
@@ -1059,8 +1135,9 @@ public class IRBuilder implements ASTVisitor {
             generateIR(firstDim);
             VirtualRegister reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
             node.regOrImm = reg;
-            curBB.append(new Binary(curBB, Binary.BinaryOp.Mul, reg, firstDim.regOrImm, new IntImme(node.getExprType().getRegisterSize())));
-            curBB.append(new Binary(curBB, Binary.BinaryOp.Add, reg, reg, new IntImme(intSize)));
+            curBB.append(new Move(curBB, reg, new IntImme(node.getExprType().getRegisterSize())));
+            curBB.append(new Binary(curBB, Binary.BinaryOp.Mul, reg, firstDim.regOrImm));
+            curBB.append(new Binary(curBB, Binary.BinaryOp.Add, reg, new IntImme(intSize)));
             curBB.append(new HeapAllocate(curBB, reg, reg));
             curBB.append(new Store(curBB, firstDim.regOrImm, reg, null, 0, null));
 

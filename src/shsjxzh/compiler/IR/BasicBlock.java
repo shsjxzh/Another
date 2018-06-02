@@ -44,6 +44,10 @@ public class BasicBlock extends IR{
         finish = true;
     }
 
+    public void finish(){
+        finish = true;
+    }
+
     public boolean isFinish() {
         return finish;
     }

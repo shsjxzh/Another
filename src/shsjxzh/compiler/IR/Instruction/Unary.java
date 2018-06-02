@@ -12,13 +12,11 @@ public class Unary extends Instruction {
 
     private UnaryOp op;
     private Register dest;
-    private Value value;
 
-    public Unary(BasicBlock curBB, UnaryOp op, Register dest, Value value) {
-        super(curBB);
+    public Unary(BasicBlock belongBB, UnaryOp op, Register dest) {
+        super(belongBB);
         this.op = op;
         this.dest = dest;
-        this.value = value;
     }
 
     public UnaryOp getOp() {
@@ -27,10 +25,6 @@ public class Unary extends Instruction {
 
     public Register getDest() {
         return dest;
-    }
-
-    public Value getValue() {
-        return value;
     }
 
     @Override

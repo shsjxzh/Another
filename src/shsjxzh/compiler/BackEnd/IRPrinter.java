@@ -111,7 +111,6 @@ public class IRPrinter implements IRVisitor {
                 this.out.print("= bitAnd ");
                 break;
         }
-        PrintIR(node.getLeft());
         PrintIR(node.getRight());
 
         this.out.println();
@@ -130,7 +129,7 @@ public class IRPrinter implements IRVisitor {
                 this.out.print("= neg ");
                 break;
         }
-        PrintIR(node.getValue());
+        PrintIR(node.getDest());
         this.out.println();
     }
 
@@ -287,11 +286,11 @@ public class IRPrinter implements IRVisitor {
     @Override
     public void visit(StaticSpace node) {
         if (definingGlobal) {
-            this.out.print(node.getName() + ":");
+            this.out.print("._" + node.getName() + ":");
             this.out.println("\tresb " + node.getSpaceSize());
         }
         else {
-            this.out.println(node.getName() + " ");
+            this.out.println("._" + node.getName() + " ");
         }
     }
 
@@ -303,7 +302,7 @@ public class IRPrinter implements IRVisitor {
             this.out.println("\tdb " + "\"" + node.getData() + "\"" + ", 0");
         }
         else {
-            this.out.println("." + node.getName() + " ");
+            this.out.print("." + node.getName() + " ");
         }
     }
 }

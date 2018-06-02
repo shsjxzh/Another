@@ -11,16 +11,15 @@ public class Binary extends Instruction {
         BitAnd/*(bitwise)*/, BitOr/*(bitwise)*/, Xor
     }
 
+    //change to 2 oprand form!
     private BinaryOp op;
     private Register dest;
-    private Value left;
     private Value right;
 
-    public Binary(BasicBlock curBB, BinaryOp op, Register dest, Value left, Value right) {
+    public Binary(BasicBlock curBB, BinaryOp op, Register dest, Value right) {
         super(curBB);
         this.op = op;
         this.dest = dest;
-        this.left = left;
         this.right = right;
     }
 
@@ -30,10 +29,6 @@ public class Binary extends Instruction {
 
     public Register getDest() {
         return dest;
-    }
-
-    public Value getLeft() {
-        return left;
     }
 
     public Value getRight() {

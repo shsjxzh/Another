@@ -3,13 +3,15 @@ package shsjxzh.compiler.IR;
 import shsjxzh.compiler.AST.Decl.FuncDeclNode;
 import shsjxzh.compiler.IR.Value.VirtualRegister;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Function extends IR{
     private String name;
     private BasicBlock startBB;
     public List<VirtualRegister> funcParams = new ArrayList<>();
+    public Map<String, VirtualRegister> funcLocalVarRegs = new LinkedHashMap<>();
+    public Map<String, Integer> localVarPos = new HashMap<>();
+
     //private BasicBlock exitBB;
     private int returnSize;
     private int returnNum;
