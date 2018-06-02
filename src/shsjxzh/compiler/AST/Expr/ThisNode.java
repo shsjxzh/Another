@@ -2,6 +2,7 @@ package shsjxzh.compiler.AST.Expr;
 
 import shsjxzh.compiler.AST.ASTVisitor;
 import shsjxzh.compiler.AST.Decl.ClassDeclNode;
+import shsjxzh.compiler.AST.Decl.VarDeclNode;
 import shsjxzh.compiler.AST.tool.Position;
 import shsjxzh.compiler.Type.Type;
 
@@ -11,7 +12,7 @@ public class ThisNode extends ExprNode{
     }
 
     //For type reference
-    private ClassDeclNode thisDefinition;
+    /*private ClassDeclNode thisDefinition;
 
     public ClassDeclNode getThisDefinition() {
         return thisDefinition;
@@ -19,6 +20,15 @@ public class ThisNode extends ExprNode{
 
     public void setThisDefinition(ClassDeclNode thisDefinition) {
         this.thisDefinition = thisDefinition;
+    }*/
+    VarDeclNode valueDefinition;
+
+    public void setValueDefinition(VarDeclNode valueDefinition) {
+        this.valueDefinition = valueDefinition;
+    }
+
+    public VarDeclNode getValueDefinition() {
+        return valueDefinition;
     }
 
     @Override
@@ -28,6 +38,6 @@ public class ThisNode extends ExprNode{
 
     @Override
     public void initExprType() {
-        exprType = new Type(thisDefinition.getName(),0);
+        exprType = valueDefinition.getVarType();
     }
 }

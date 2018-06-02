@@ -12,6 +12,7 @@ public class IRPrinter implements IRVisitor {
     private String indent;
     private PrintStream out;
     private Set<String> BBVisit = new HashSet<>();
+    private boolean definingGlobal = false;
 
     public IRPrinter(PrintStream out) {
         indent = "";
@@ -32,6 +33,11 @@ public class IRPrinter implements IRVisitor {
     @Override
     public void visit(IRRoot node) {
         //tmp
+        definingGlobal = true;
+        node.staticDataList.forEach(x -> x.accept(this));
+        node.stringMap.values().forEach(this::visit);
+        definingGlobal = false;
+        this.out.println();
         node.functionMap.values().forEach(this::visit);
     }
 
@@ -280,11 +286,24 @@ public class IRPrinter implements IRVisitor {
 
     @Override
     public void visit(StaticSpace node) {
-
+        if (definingGlobal) {
+            this.out.print(node.getName() + ":");
+            this.out.println("\tresb " + node.getSpaceSize());
+        }
+        else {
+            this.out.println(node.getName() + " ");
+        }
     }
 
     @Override
     public void visit(StaticString node) {
-
+        //str has  "." as the start
+        if (definingGlobal) {
+            this.out.print("." + node.getName() + ": ");
+            this.out.println("\tdb " + "\"" + node.getData() + "\"" + ", 0");
+        }
+        else {
+            this.out.println("." + node.getName() + " ");
+        }
     }
 }

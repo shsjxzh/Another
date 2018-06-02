@@ -38,4 +38,7 @@ public class VariableNode extends ExprNode{
     public void initExprType() {
         exprType = valueDefinition.getVarType();
     }
+
+    //for the variable in class method
+    public MemberAccessNode inClassVar = null;
 }

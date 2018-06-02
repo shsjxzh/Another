@@ -16,10 +16,11 @@ public class IRRoot extends IR{
     public List<StaticData> staticDataList = new ArrayList<>();
     private int regCount = 0;
     private int BBCount = 0;
+    private int strCount = 0;
 
     //be careful to add sth
     public IRRoot() {
-       stringMap.put("\\n", new StaticString("\\n"));
+       stringMap.put("\\n", new StaticString("\\n", getStrCountAndIncrease()));
 
        //for global variable initialize
        //we will simplify it later
@@ -35,6 +36,8 @@ public class IRRoot extends IR{
     public int getBBCountAndIncrease(){
         return ++BBCount;
     }
+
+    public int getStrCountAndIncrease() {return ++strCount;}
 
     public void accept(IRVisitor visitor){
         visitor.visit(this);

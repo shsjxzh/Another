@@ -22,6 +22,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     // Start
     private void initialize(Position pos, List<DeclNode> declNodes){
         //.size() is lost !! be carefull!!
+        //the build-in class do not need add "this" parameter
+
         BlockNode emptyBlock = new BlockNode(pos,new ArrayList<>());
         //int
         declNodes.add( new ClassDeclNode(pos,"int",new ArrayList<>(),
@@ -90,8 +92,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         Position progPos = new Position(ctx);
         for (ParseTree child : ctx.decl()){
             DeclNode childNode = (DeclNode) visit(child);
-            if (!childNode.getName().equals("main")) declNodes.add(childNode);
-            else mainDecl = (FuncDeclNode) childNode;
+            declNodes.add(childNode);
+            if (childNode.getName().equals("main")) mainDecl = (FuncDeclNode) childNode;
         }
 
         initialize(progPos,declNodes);
@@ -156,16 +158,24 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         String className = ctx.ID().getText();
 
         List<VarDeclNode> classMember = new ArrayList<>();
+
         List<FuncDeclNode> classMethod = new ArrayList<>();
         for (ParseTree child: ctx.classStat()){
             ASTNode childNode = visit(child);
             if (childNode instanceof VarDeclNode){
+                ((VarDeclNode) childNode).setInClass(true);
                 classMember.add((VarDeclNode) childNode);
             }
             else if (childNode instanceof FuncDeclNode){
                 if (((FuncDeclNode) childNode).getName().equals(className)){
                     throw new ErrorHandler("Error constructor", childNode.getPos());
                 }
+
+                //add "this" parameters for further check
+                VarDeclNode thisVar = new VarDeclNode(childNode.getPos(), new Type(className,0), "this", null);
+                ((FuncDeclNode) childNode).getFuncParams().add(thisVar);
+                ((FuncDeclNode) childNode).className = className;
+
                 classMethod.add((FuncDeclNode) childNode);
             }
         }
@@ -175,13 +185,16 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             Position funcPos = new Position(ctx.constractDecl());
             String funcName = ctx.constractDecl().ID().getText();
 
+            //Todo add "this"!
             //constructor check
             if (!funcName.equals(className)){
                 throw new ErrorHandler("Invalid constructor ", funcPos);
             }
-
+            List<VarDeclNode> funcParams = new ArrayList<>();
+            funcParams.add(new VarDeclNode(classPos, new Type(className,0), "this", null));
             BlockNode funcBody = (BlockNode) visit(ctx.constractDecl().blockStat());
-            constructMethod = new FuncDeclNode(funcPos, new Type("null",0), funcBody ,funcName, new ArrayList<>());
+            constructMethod = new FuncDeclNode(funcPos, new Type("null",0), funcBody ,funcName, funcParams);
+            constructMethod.className = className;
         }
 
         return new ClassDeclNode(classPos, className, classMember, classMethod, constructMethod);
@@ -414,6 +427,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     public ASTNode visitLiteral(MxParser.LiteralContext ctx) {
         Position literalPos = new Position(ctx);
         Token type = ctx.literalType;
+        //ctx.STRING_LITERAL().
+        //ctx.literalType.
         if (type.getType() == MxParser.NULL_LITERAL){
             return new NullLiteralNode(literalPos);
         }
@@ -424,7 +439,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             return new IntLiteralNode(literalPos, Integer.parseInt(type.getText()));
         }
         else if (type.getType() == MxParser.STRING_LITERAL){
-            return new StringLiteralNode(literalPos, type.getText());
+            String str = type.getText();
+            return new StringLiteralNode(literalPos, str.substring(1, str.length() - 1));
         }
         else{
             throw new ErrorHandler("Invalid Literal",literalPos);

@@ -267,5 +267,3 @@ fragment
 LETTER:         [a-zA-Z] ;
 DIGIT:          [0-9];
 ESC:            '\\' [nr"\\] ;  //\n, \r ...
-
-

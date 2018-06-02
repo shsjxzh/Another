@@ -33,6 +33,16 @@ public class VarDeclNode extends DeclNode {
         return expr;
     }
 
+    private boolean inClass = false;
+
+    public void setInClass(boolean inClass) {
+        this.inClass = inClass;
+    }
+
+    public boolean isInClass() {
+        return inClass;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

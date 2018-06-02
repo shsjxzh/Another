@@ -62,5 +62,8 @@ public class FuncDeclNode extends DeclNode {
         this.funcParams = funcParams;
         this.isBuildIn = isBuildIn;
     }
+
+    public String className = null;
+
 }
 

@@ -27,6 +27,7 @@ public class ClassDeclNode extends DeclNode {
 
         //it is a little tricky, may need some change
         int wise = 8;
+        //be careful about the "this" parameter!!
         this.allocSize = wise * classMember.size();
         int curOffset = 0;
         for (VarDeclNode member : classMember) {

@@ -10,6 +10,10 @@ public class StaticSpace extends StaticData {
         this.spaceSize = spaceSize;
     }
 
+    public int getSpaceSize() {
+        return spaceSize;
+    }
+
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);

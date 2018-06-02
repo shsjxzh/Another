@@ -2,10 +2,7 @@ package shsjxzh.compiler.FrontEnd;
 
 import shsjxzh.compiler.AST.ASTNode;
 import shsjxzh.compiler.AST.ASTVisitor;
-import shsjxzh.compiler.AST.Decl.ClassDeclNode;
-import shsjxzh.compiler.AST.Decl.DeclNode;
-import shsjxzh.compiler.AST.Decl.FuncDeclNode;
-import shsjxzh.compiler.AST.Decl.VarDeclNode;
+import shsjxzh.compiler.AST.Decl.*;
 import shsjxzh.compiler.AST.Expr.*;
 import shsjxzh.compiler.AST.ProgramNode;
 import shsjxzh.compiler.AST.Stmt.*;
@@ -78,6 +75,7 @@ public class IRBuilder implements ASTVisitor {
 
     private boolean needMemAccess(ExprNode node){
         if (node instanceof ArrayIndexNode || node instanceof MemberAccessNode) return true;
+        else if (node instanceof VariableNode && ((VariableNode) node).inClassVar != null) return true;
         else return false;
     }
 
@@ -91,6 +89,7 @@ public class IRBuilder implements ASTVisitor {
         inSideEffect = true;
 
         StaticData data = new StaticSpace(node.getName(), node.getVarType().getRegisterSize());
+        //there is no problem when it comes to string, because "stringLiteral" will handle everything
         irRoot.staticDataList.add(data);
 
         VirtualRegister reg = new VirtualRegister("Reg_" + node.getName());
@@ -119,6 +118,7 @@ public class IRBuilder implements ASTVisitor {
     */
     private void insertBuildInFunc(){
         Function tmp;
+        //build-in function has two "_" at the front
         tmp = new Function("__PrintString");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
         tmp = new Function("__PrintlnString");
@@ -137,12 +137,31 @@ public class IRBuilder implements ASTVisitor {
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
         tmp = new Function("__StringEqual");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
-        tmp = new Function("__StirngLess");
+        tmp = new Function("__StringLess");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
         tmp = new Function("__StringParseInt");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
         tmp = new Function("__StringSubString");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
+    }
+
+    /*
+    ========================= Tool Function for function preprocess =========================
+    */
+    private void preProcessFunc(FuncDeclNode node){
+        if (node != null) {
+            Function tmp;
+            if (node.className == null) {
+                tmp = new Function(node.getName(), "B_" + irRoot.getBBCountAndIncrease(), node.returnNum, node.getFuncReturnType().getRegisterSize());
+            }
+            else{
+                //pay attention to this!!
+                //class method has one "_" at the front
+                tmp = new Function("_" + node.className + node.getName(), "B_" + irRoot.getBBCountAndIncrease(), node.returnNum, node.getFuncReturnType().getRegisterSize());
+            }
+            irRoot.functionMap.put(tmp.getName(), tmp);
+            node.irFunction = tmp;
+        }
     }
 
     /*
@@ -154,6 +173,7 @@ public class IRBuilder implements ASTVisitor {
             list:
             arrayIndex, compare op, bool const, call(func & class method), member access, unary op("!")
         */
+        //  Todo: string has some problem!!
         //  If you want to cut memory use in compiling, change jump (label) to jump (pointer)
         insertBuildInFunc();
         curFunc = irRoot.functionMap.get("__init");
@@ -161,23 +181,28 @@ public class IRBuilder implements ASTVisitor {
 
 
         for (DeclNode declNode : node.getDeclnodes()) {
-            if (declNode instanceof VarDeclNode){
-                staticVarGenerate( (VarDeclNode) declNode);
-            }
-            if (declNode instanceof FuncDeclNode){
-                if (declNode.isBuildIn) continue;
-                Function tmp = new Function(declNode.getName(), "B_" + irRoot.getBBCountAndIncrease(), ((FuncDeclNode)declNode).returnNum, ((FuncDeclNode)declNode).getFuncReturnType().getRegisterSize());
-                irRoot.functionMap.put(declNode.getName(), tmp);
-                ((FuncDeclNode) declNode).irFunction = tmp;
+            if (!declNode.isBuildIn) {
+                if (declNode instanceof VarDeclNode) {
+                    staticVarGenerate((VarDeclNode) declNode);
+                } else if (declNode instanceof FuncDeclNode) {
+                    preProcessFunc((FuncDeclNode) declNode);
+                } else if (declNode instanceof ClassDeclNode) {
+                    ClassDeclNode tmp = (ClassDeclNode) declNode;
+                    preProcessFunc(tmp.getConstructMethod());
+                    tmp.getClassMethod().forEach(x -> preProcessFunc(x));
+                }
             }
         }
 
-        //initialize the main
-        FuncDeclNode mainFunc = (FuncDeclNode) node.getMainDecl();
-        Function tmp = new Function(mainFunc.getName(), "B_" + irRoot.getBBCountAndIncrease(), mainFunc.returnNum, mainFunc.getFuncReturnType().getRegisterSize());
-        irRoot.functionMap.put(mainFunc.getName(), tmp);
-        mainFunc.irFunction = tmp;
-        generateIR(node.getMainDecl());
+        //initialize the main first
+        //generateIR(node.getMainDecl());
+
+        for (DeclNode declNode : node.getDeclnodes()) {
+            if (!declNode.isBuildIn && !(declNode instanceof VarDeclNode)) {
+                //Todo: handle the build-in function and class
+                generateIR(declNode);
+            }
+        }
 
         //finish the generation of "__init" function
         //pretend that there will be no parameters for "main"
@@ -188,13 +213,6 @@ public class IRBuilder implements ASTVisitor {
         //return node will point to a return basic block
         //but there is no need for a init function
         curBB.finish(new Return(curBB, reg));
-
-        for (DeclNode declNode : node.getDeclnodes()) {
-            if (!declNode.isBuildIn) {
-                //Todo: handle the build-in function and class
-                generateIR(declNode);
-            }
-        }
     }
 
     /*
@@ -202,7 +220,12 @@ public class IRBuilder implements ASTVisitor {
     */
     @Override
     public void visit(FuncDeclNode node) {
-        curFunc = irRoot.functionMap.get(node.getName());
+        if (node.className == null) {
+            curFunc = irRoot.functionMap.get(node.getName());
+        }
+        else{
+            curFunc = irRoot.functionMap.get("_" + node.className + node.getName());
+        }
         //node.irFunction = curFunc;
         //already put!!
         //irRoot.functionMap.put(curFunc.getName(), curFunc);
@@ -238,7 +261,8 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public void visit(ClassDeclNode node) {
-        //ToDo
+        generateIR(node.getConstructMethod());
+        node.getClassMethod().forEach(x -> generateIR(x));
     }
 
     @Override
@@ -459,21 +483,34 @@ public class IRBuilder implements ASTVisitor {
     */
     @Override
     public void visit(VariableNode node) {
-        //renew the information for convenient use
-        //for an ExprNode, it must include a instruction
-        node.regOrImm = node.getValueDefinition().varReg;
-        //the leaf for the logical operation
-        if (inLogicalGeneration(node)){
-            setShortCircuitLeaf(node);
+        if (node.inClassVar != null){
+            //replace it!
+            node.inClassVar.ifTrue = node.ifTrue;
+            node.inClassVar.ifFalse = node.ifFalse;
+            generateIR(node.inClassVar);
+            node.regOrImm = node.inClassVar.regOrImm;
+            node.Base = node.inClassVar.Base;
+            node.Index = node.inClassVar.Index;
+            node.scale = node.inClassVar.scale;
+            node.displacement = node.inClassVar.displacement;
         }
+        else {
+            //renew the information for convenient use
+            //for an ExprNode, it must include a instruction
+            node.regOrImm = node.getValueDefinition().varReg;
+            //the leaf for the logical operation
+            if (inLogicalGeneration(node)) {
+                setShortCircuitLeaf(node);
+            }
+        }
+
     }
 
 
     @Override
     public void visit(ThisNode node) {
-        //Todo
         //"this" will not be the leaf of logical expression
-
+        node.regOrImm = node.getValueDefinition().varReg;
     }
 
     @Override
@@ -508,7 +545,12 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public void visit(StringLiteralNode node) {
-        // ToDo
+        StaticString str = irRoot.stringMap.get(node.getValue());
+        if (str == null){
+            str = new StaticString(node.getValue(), irRoot.getStrCountAndIncrease());
+            irRoot.stringMap.put(node.getValue(), str);
+        }
+        node.regOrImm = str;
     }
 
     /*
@@ -597,7 +639,48 @@ public class IRBuilder implements ASTVisitor {
     }
 
     private void stringCompareProcess(BinaryOpNode node){
-        //ToDo
+        generateIR(node.getRight());
+        generateIR(node.getLeft());
+
+        VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        VirtualRegister tmpReg1;
+        List<Value> argvs = new ArrayList<>();
+        switch (node.getOp()){
+            case EQ:
+                argvs.add(node.getLeft().regOrImm);
+                argvs.add(node.getRight().regOrImm);
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringEqual"), argvs, destReg));
+                break;
+            case LT:
+                argvs.add(node.getLeft().regOrImm);
+                argvs.add(node.getRight().regOrImm);
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, destReg));
+                break;
+            case GT:
+                argvs.add(node.getRight().regOrImm);
+                argvs.add(node.getLeft().regOrImm);
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, destReg));
+                break;
+            case LE:
+                argvs.add(node.getLeft().regOrImm);
+                argvs.add(node.getRight().regOrImm);
+                tmpReg1 = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, tmpReg1));
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringEqual"), argvs, destReg));
+                curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, destReg, tmpReg1));
+                break;
+            case GE:
+                argvs.add(node.getRight().regOrImm);
+                argvs.add(node.getLeft().regOrImm);
+                tmpReg1 = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, tmpReg1));
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringEqual"), argvs, destReg));
+                curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, destReg, tmpReg1));
+                break;
+                default:
+                    throw new RuntimeException("Invalid string operation");
+        }
+        node.regOrImm = destReg;
     }
 
     private void intCompareProcess(BinaryOpNode node){
@@ -625,6 +708,23 @@ public class IRBuilder implements ASTVisitor {
             curBB.finish(new Branch(curBB, reg, node.ifTrue.getName(), node.ifFalse.getName()));
             curBB.LinkNextBB(node.ifTrue);
             curBB.LinkNextBB(node.ifFalse);
+        }
+    }
+
+    private void stringBinaryProcess(BinaryOpNode node){
+        generateIR(node.getRight());
+        generateIR(node.getLeft());
+
+        switch (node.getOp()){
+            case ADD:
+                VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                List<Value> argvs = new ArrayList<>();
+                argvs.add(node.getLeft().regOrImm);
+                argvs.add(node.getRight().regOrImm);
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringConcat"),argvs, destReg));
+                node.regOrImm = destReg;
+                break;
+                default: throw new RuntimeException("Invalid string operation");
         }
     }
 
@@ -681,7 +781,8 @@ public class IRBuilder implements ASTVisitor {
                 break;
 
             case ADD: case SUB: case DIV: case MUL: case MOD: case XOR: case BIT_OR: case BIT_AND: case L_SHIFT: case R_SHIFT:
-                arithmeticProcess(node);
+                if (node.getRight().exprType.isString()) stringBinaryProcess(node);
+                else arithmeticProcess(node);
                 break;
                 //debug
                 default: throw new RuntimeException("Unknown operator");
@@ -943,6 +1044,14 @@ public class IRBuilder implements ASTVisitor {
             VirtualRegister reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
             curBB.append(new HeapAllocate(curBB, reg, new IntImme(type.getTypeDefinition().getAllocSize())));
             node.regOrImm = reg;
+            if (node.getExprType().getTypeDefinition().getConstructMethod() != null){
+                Function constructor = node.getExprType().getTypeDefinition().getConstructMethod().irFunction;
+                //call constructor, with no return value!!
+                List<Value> argvs = new ArrayList<>();
+                //use the reg of myself as the parameter("this")
+                argvs.add(reg);
+                curBB.append(new Call(curBB, constructor, argvs, null));
+            }
         }
         else{
             //array
@@ -1037,6 +1146,43 @@ public class IRBuilder implements ASTVisitor {
 
     private void processBuildInClassMethod(MethodAccessNode node){
         //we may need backup here
+        boolean oldLValueGetAddress = LValueGetAddress;
+        String method = node.getMethodName();
+
+        //visit the parameters
+        node.getMethodParams().forEach(x -> generateIR(x));
+        List<Value> argvs = new ArrayList<>();
+        node.getMethodParams().forEach(x -> argvs.add(x.regOrImm));
+
+        //add "this"
+        argvs.add(node.getObject().regOrImm);
+
+        if (method.equals("size") || method.equals("length")){
+            //array.size || string.length
+            //Todo double check this
+            VirtualRegister destReg = new VirtualRegister("size_" + irRoot.getRegCountAndIncrease());
+            curBB.append(new Load(curBB, destReg, (Register) node.getObject().regOrImm, null, 0, null));
+            node.regOrImm = destReg;
+        }
+        else if (method.equals("substring")){
+            VirtualRegister destReg = new VirtualRegister("substr_" + irRoot.getRegCountAndIncrease());
+            curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringSubString"), argvs, destReg));
+            node.regOrImm = destReg;
+        }
+        else if (method.equals("parseInt")){
+            VirtualRegister destReg = new VirtualRegister("substr_" + irRoot.getRegCountAndIncrease());
+            curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringParseInt"), argvs, destReg));
+            node.regOrImm = destReg;
+        }
+        else if (method.equals("ord")){
+            //Todo double check this
+            VirtualRegister destReg = new VirtualRegister("ord_" + irRoot.getRegCountAndIncrease());
+            curBB.append(new Load(curBB, destReg, (Register) node.getObject().regOrImm, (Register) argvs.get(0), 1, new IntImme(intSize)));
+            node.regOrImm = destReg;
+        }
+        else throw new RuntimeException("Undefined build-in class method");
+
+        LValueGetAddress = oldLValueGetAddress;
     }
 
 
@@ -1076,11 +1222,26 @@ public class IRBuilder implements ASTVisitor {
         //set SideEffect
         boolean oldInSideEffect = inSideEffect;
         inSideEffect = true;
+        //be carefull!
+        generateIR(node.getObject());
+
         if (node.getFuncDefinition().isBuildIn){
             processBuildInClassMethod(node);
         }
         else{
-            //Todo
+            node.getMethodParams().forEach(x -> generateIR(x));
+            List<Value> argvs = new ArrayList<>();
+            node.getMethodParams().forEach(x -> argvs.add(x.regOrImm));
+            //add "this" parameter
+            argvs.add(node.getObject().regOrImm);
+            if (!node.getFuncDefinition().getFuncReturnType().isNull()) {
+                VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curBB.append(new Call(curBB, node.getFuncDefinition().irFunction, argvs, destReg));
+                node.regOrImm = destReg;
+            }
+            else{
+                curBB.append(new Call(curBB, node.getFuncDefinition().irFunction, argvs,null));
+            }
         }
 
         //The leaf of the short circuit generation

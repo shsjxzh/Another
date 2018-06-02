@@ -28,7 +28,7 @@ public class BasicBlock extends IR{
 
     public void append(Instruction ins){
         //for debug
-        if (finish) throw new RuntimeException("Cannot add instruction to an ended block!");
+        if (finish) throw new RuntimeException("Cannot add instruction to an ended block in " + name + ", " + belongFunc.getName());
         if (headIns == null){
             headIns = ins;
             lastIns = ins;

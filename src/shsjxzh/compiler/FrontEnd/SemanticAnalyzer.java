@@ -62,7 +62,7 @@ public class SemanticAnalyzer implements ASTVisitor{
 
     //check type reference
     private void checkTypeDefinition(Type type, Position pos) {
-        if (!type.isNull()) {//type != null &&
+        if (!type.isNull()) {//type != null
             //must be class!!
             ClassDeclNode typeDefinition = typeDefinitions.get(type.getTypeName());
             if (typeDefinition == null) {
@@ -100,7 +100,6 @@ public class SemanticAnalyzer implements ASTVisitor{
             for (VarDeclNode varDeclNode : node.getFuncParams()) {
                 check(varDeclNode);
             }
-
             currentScope = currentScope.getParentScope();
         }
     }
@@ -136,9 +135,9 @@ public class SemanticAnalyzer implements ASTVisitor{
             }
         }
 
-        DeclNode mainDecl = node.getMainDecl();
+        /*DeclNode mainDecl = node.getMainDecl();
 
-        if (mainDecl instanceof FuncDeclNode) preProcessFunc( (FuncDeclNode) mainDecl);
+        if (mainDecl instanceof FuncDeclNode) preProcessFunc( (FuncDeclNode) mainDecl);*/
         for (DeclNode decl : decls) {
             if (decl instanceof FuncDeclNode){
                 preProcessFunc((FuncDeclNode) decl);
@@ -149,6 +148,7 @@ public class SemanticAnalyzer implements ASTVisitor{
         }
 
         //main check
+        DeclNode mainDecl = globalScope.entities.get("main");
         if (mainDecl == null) throw new ErrorHandler("missing main function", node.getPos());
         else {
             if (mainDecl instanceof FuncDeclNode){
@@ -160,9 +160,9 @@ public class SemanticAnalyzer implements ASTVisitor{
         }
 
         //check all
-        check(mainDecl);
+        //check(mainDecl);
         for (DeclNode decl : decls) {
-            check(decl);
+            if (!decl.isBuildIn) check(decl);
         }
         //when you exit check, it means no errors occur there.
 
@@ -217,7 +217,6 @@ public class SemanticAnalyzer implements ASTVisitor{
             throw new ErrorHandler("Error using of \"main\"", node.getPos());
         }
         currentScope.define(node);
-        
     }
 
     @Override
@@ -449,6 +448,12 @@ public class SemanticAnalyzer implements ASTVisitor{
         DeclNode entity = currentScope.resolve(node.getName());
         if (entity != null){
             if (entity instanceof VarDeclNode) {
+                //change "a" to "this.a"
+                if (((VarDeclNode) entity).isInClass()){
+                    node.inClassVar = new MemberAccessNode(node.getPos(), new ThisNode(node.getPos()), node.getName());
+                    checkAndInitType(node.inClassVar);
+                }
+                //do it because it is necessary for check
                 node.setValueDefinition( (VarDeclNode) entity);
             }
             else throw new ErrorHandler("Undefined variable \"" + node.getName() + "\"" , node.getPos());
@@ -461,10 +466,19 @@ public class SemanticAnalyzer implements ASTVisitor{
 
     @Override
     public void visit(ThisNode node) {
-        DeclNode entity = currentScope.resolveThis();
+        /*DeclNode entity = currentScope.resolveThis();
         //must not be null!!
         if (entity != null) {
             node.setThisDefinition((ClassDeclNode) entity);
+        }
+        else throw new ErrorHandler("Error using of \"This\"", node.getPos());
+        */
+        DeclNode entity = currentScope.resolve("this");
+        if (entity != null){
+            if (entity instanceof VarDeclNode) {
+                node.setValueDefinition( (VarDeclNode) entity);
+            }
+            else throw new ErrorHandler("Error using of \"This\"", node.getPos());
         }
         else throw new ErrorHandler("Error using of \"This\"", node.getPos());
     }
