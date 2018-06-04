@@ -33,11 +33,9 @@ public class StupidAssemblePrinter implements IRVisitor {
 
     @Override
     public void visit(IRRoot node) {
-        //this.out.println("extern malloc");
-        //this.out.println("global main");
-        //this.out.println();
+        BufferedReader br;
         try {
-            BufferedReader br = new BufferedReader(new FileReader("lib/lib.asm"));
+            br = new BufferedReader(new FileReader("lib/lib.asm"));
             String line;
             while ((line = br.readLine()) != null){
                 this.out.println(line);
@@ -48,8 +46,8 @@ public class StupidAssemblePrinter implements IRVisitor {
             exit(0);
         }
 
-        this.out.println("section .text");
-        //node.functionMap.values().forEach(this::visit);
+        //main
+        this.out.println(";===================================================\n");
         Function initFunc = null;
         for (Function function : node.functionMap.values()) {
             if (!function.getName().equals("__init")){
@@ -60,16 +58,52 @@ public class StupidAssemblePrinter implements IRVisitor {
 
         AssemblePrint(initFunc);
 
-        //tmp
-        definingGlobal = true;
-        this.out.println("section .bss");
-        node.staticDataList.forEach(x -> x.accept(this));
-        this.out.println();
+        //data
+        try {
+            br = new BufferedReader(new FileReader("lib/data.asm"));
+            String line;
+            while ((line = br.readLine()) != null){
+                this.out.println(line);
+            }
 
-        this.out.println("section .data");
+        } catch (Exception e) {
+            e.printStackTrace();
+            exit(0);
+        }
+        definingGlobal = true;
+        //this.out.println("section .data");
         node.stringMap.values().forEach(this::visit);
         this.out.println();
+
+        //bss
+        try {
+            br = new BufferedReader(new FileReader("lib/bss.asm"));
+            String line;
+            while ((line = br.readLine()) != null){
+                this.out.println(line);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            exit(0);
+        }
+        //this.out.println("section .bss");
+        node.staticDataList.forEach(x -> x.accept(this));
+        this.out.println();
         definingGlobal = false;
+
+        //end
+        try {
+            br = new BufferedReader(new FileReader("lib/end.asm"));
+            String line;
+            while ((line = br.readLine()) != null){
+                this.out.println(line);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            exit(0);
+        }
     }
 
 
@@ -85,11 +119,11 @@ public class StupidAssemblePrinter implements IRVisitor {
         this.out.println("\tmov rbp, rsp");
 
         //global variable doesn't need it
-        if (!node.getName().equals("__init")) this.out.println("\tsub rsp " + node.funcLocalVarRegs.size() * 8);
+        if (!node.getName().equals("__init")) this.out.println("\tsub rsp, " + node.funcLocalVarRegs.size() * 8);
 
         //for local variable
-        this.out.println("\tmov r11, rbp");
-        this.out.println("\tadd r11, 16");
+        //this.out.println("\tmov r11, rbp");
+        //this.out.println("\tadd r11, 16");
 
         AssemblePrint(node.getStartBB());
 
@@ -294,7 +328,7 @@ public class StupidAssemblePrinter implements IRVisitor {
             Collections.reverse(reverseVar);
             for (Value value : reverseVar) {
                 this.out.print("\tmov rax, "); AssemblePrint(value); this.out.println();
-                this.out.print("\tpush rax");
+                this.out.println("\tpush rax");
             }
             //function name must be add @!
             this.out.println("\tcall @" + node.getCallFunc().getName());
@@ -389,9 +423,12 @@ public class StupidAssemblePrinter implements IRVisitor {
     @Override
     public void visit(VirtualRegister node) {
         if (curFunc.funcParams.containsKey(node.getName())) {
-            this.out.print("qword [r11 + " + curFunc.paramPos.get(node.getName()) + "] ");
+            this.out.print("qword [rbp + " + (16 + curFunc.paramPos.get(node.getName())) + "] ");
         } else if (curFunc.funcLocalVarRegs.containsKey(node.getName())) {
-            this.out.print(("qword [rbp - " + curFunc.localVarPos.get(node.getName()) + "] "));
+            //if (curFunc.localVarPos.get(node.getName()) != 0)
+            this.out.print(("[rbp - " + (curFunc.localVarPos.get(node.getName()) + 8) + "] "));  //qword
+            //else
+                //this.out.print(("[rbp]"));  //qword
         }
         else {
             throw new RuntimeException("register loss!");
@@ -405,13 +442,13 @@ public class StupidAssemblePrinter implements IRVisitor {
 
     @Override
     public void visit(StaticSpace node) {
-        //global_var has "._"
+        //global_var has "$"
         if (definingGlobal) {
-            this.out.print("._" + node.getName() + ":");
-            this.out.println("\tresq 1");
+            this.out.println("$" + node.getName() + ":");
+            this.out.println("\t\tresq\t1");
         }
         else {
-            this.out.print("qword [" + "._" + node.getName() + "] ");
+            this.out.print("qword [" + "$" + node.getName() + "] ");
         }
     }
 

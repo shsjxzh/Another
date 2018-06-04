@@ -25,7 +25,7 @@ extern putchar
 extern __printf_chk
 
 
-SECTION .text   6
+SECTION .text
 
 __PrintString:
         lea     rdx, [rdi+8H]
@@ -386,36 +386,4 @@ ALIGN   8
 __StringOrd:
         movsx   rax, byte [rsi+rdi+8H]
         ret
-
-
-
-SECTION .data   
-
-
-SECTION .bss    align=32
-
-__buffer.3535:
-        resb    3
-
-L_011:
-        resb    1048573
-
-
-SECTION .text.unlikely 
-
-
-SECTION .text.startup 6
-
-
-SECTION .rodata.str1.1 
-
-L_012:
-        db 25H, 73H, 00H
-
-L_013:
-        db 25H, 6CH, 64H, 00H
-
-L_014:
-        db 25H, 6CH, 64H, 0AH, 00H
-
 
