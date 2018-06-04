@@ -477,8 +477,8 @@ public class IRBuilder implements ASTVisitor {
         curBB = whileBody;
         generateIR(node.getBody());
         if (!curBB.isFinish()){
-            curBB.finish(new Jump(curBB, whileMerge.getName()));
-            curBB.LinkNextBB(whileMerge);
+            curBB.finish(new Jump(curBB, whileCond.getName()));
+            curBB.LinkNextBB(whileCond);
         }
 
         curBreakLoopBB = oldBreakLoop;
