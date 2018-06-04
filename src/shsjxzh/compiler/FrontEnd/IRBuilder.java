@@ -142,6 +142,8 @@ public class IRBuilder implements ASTVisitor {
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
         tmp = new Function("__StringLess");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
+        tmp = new Function("__StringLEqual");
+        irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
 
         tmp = new Function("__StringParseInt");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
@@ -686,9 +688,9 @@ public class IRBuilder implements ASTVisitor {
         VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
         curFunc.addFuncLocalVar(destReg);
         node.regOrImm = destReg;
-        VirtualRegister tmpReg1;
+        //VirtualRegister tmpReg1;
         List<Value> argvs = new ArrayList<>();
-        argvs.add(node.getLeft().regOrImm); argvs.add(node.getRight().regOrImm);
+        //argvs.add(node.getLeft().regOrImm); argvs.add(node.getRight().regOrImm);
         //curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringCmp"), argvs, destReg));
         switch (node.getOp()){
             case EQ:
@@ -709,20 +711,12 @@ public class IRBuilder implements ASTVisitor {
             case LE:
                 argvs.add(node.getLeft().regOrImm);
                 argvs.add(node.getRight().regOrImm);
-                tmpReg1 = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
-                curFunc.addFuncLocalVar(tmpReg1);
-                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, tmpReg1));
-                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringEqual"), argvs, destReg));
-                curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, tmpReg1));
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLEqual"), argvs, destReg));
                 break;
             case GE:
                 argvs.add(node.getRight().regOrImm);
                 argvs.add(node.getLeft().regOrImm);
-                tmpReg1 = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
-                curFunc.addFuncLocalVar(tmpReg1);
-                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, tmpReg1));
-                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringEqual"), argvs, destReg));
-                curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, tmpReg1));
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLEqual"), argvs, destReg));
                 break;
                 default:
                     throw new RuntimeException("Invalid string operation");
