@@ -312,13 +312,15 @@ public class StupidAssemblePrinter implements IRVisitor {
             case 2:
                 this.out.print("\tmov rsi, "); AssemblePrint(node.getArgvs().get(1)); this.out.println();
             case 1:
-                this.out.print("mov rdi, "); AssemblePrint(node.getArgvs().get(0)); this.out.println();
+                this.out.print("\tmov rdi, "); AssemblePrint(node.getArgvs().get(0)); this.out.println();
             case 0:
                 break;
                 default: throw new RuntimeException("error buildin func params");
         }
         this.out.println("\tcall " + name);
-        this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
+        if (node.getDest() != null) {
+            this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
+        }
         //this.out.println("add esp " + (node.getArgvs().size() * 8));
     }
 
@@ -336,7 +338,9 @@ public class StupidAssemblePrinter implements IRVisitor {
             }
             //function name must be add @!
             this.out.println("\tcall @" + node.getCallFunc().getName());
-            this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
+            if (node.getDest() != null) {
+                this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
+            }
             this.out.println("\tadd rsp, " + (node.getArgvs().size() * 8));
             //Then call
             //Then clean the rubbish
