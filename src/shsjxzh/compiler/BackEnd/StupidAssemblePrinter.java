@@ -261,8 +261,12 @@ public class StupidAssemblePrinter implements IRVisitor {
             case EQ: op = "\tsete ";  break;
             case NE: op = "\tsetne "; break;
         }
-        this.out.println(op + "rax");
-        this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
+        this.out.println(op + "al");
+
+        //Todo: trying to reduce it!!
+        //why movzx don't accept the memory??
+        this.out.println("\tmovzx rcx, al");
+        this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rcx");
     }
 
     @Override
