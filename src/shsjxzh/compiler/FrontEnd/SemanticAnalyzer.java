@@ -61,6 +61,9 @@ public class SemanticAnalyzer implements ASTVisitor{
             //ensure that the leaves has been set, so we can initialize the type
             node.initExprType();
         }
+        if (node instanceof ArrayIndexNode || node instanceof StringLiteralNode){
+            checkTypeDefinition(node.exprType, node.getPos());
+        }
     }
 
     //check type reference
