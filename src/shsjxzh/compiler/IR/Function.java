@@ -28,7 +28,6 @@ public class Function extends IR{
         localVarPos.put(reg.getName(), curLocalVarPos);
         curLocalVarPos += 8; //int size
     }
-
     //private BasicBlock exitBB;
     private int returnSize;
     private int returnNum;

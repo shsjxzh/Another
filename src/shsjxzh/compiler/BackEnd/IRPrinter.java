@@ -48,6 +48,8 @@ public class IRPrinter implements IRVisitor {
         /*for (VirtualRegister funcParam : node.funcParams) {
             PrintIR(funcParam);
         }*/
+        node.funcParams.values().forEach(x -> PrintIR(x));
+
         this.out.println();
         addIndent();
         PrintIR(node.getStartBB());

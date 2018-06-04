@@ -126,6 +126,9 @@ public class StupidAssemblePrinter implements IRVisitor {
         //this.out.println("\tadd r11, 16");
 
         AssemblePrint(node.getStartBB());
+        //to ensure safety
+        this.out.println("\tleave");
+        this.out.println("\tret");
 
         this.out.println();
     }
@@ -138,6 +141,8 @@ public class StupidAssemblePrinter implements IRVisitor {
         this.out.println("__" + node.getName() + ": ");
         for (Instruction itr = node.getHeadIns(); itr!= null; itr = itr.Next()){
             AssemblePrint(itr);
+            //must be drop before push
+            //this.out.println();
         }
 
         //this.out.println();
@@ -299,7 +304,7 @@ public class StupidAssemblePrinter implements IRVisitor {
 
     @Override
     public void visit(Return node) {
-        //the rax has already been put as the result
+        //the rax has already been put as the result,but the node's reg will be useful in a moment!!
         this.out.println("\tleave");
         this.out.println("\tret");
     }
@@ -321,7 +326,6 @@ public class StupidAssemblePrinter implements IRVisitor {
         if (node.getDest() != null) {
             this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
         }
-        //this.out.println("add esp " + (node.getArgvs().size() * 8));
     }
 
     @Override
@@ -461,7 +465,8 @@ public class StupidAssemblePrinter implements IRVisitor {
     @Override
     public void visit(StaticString node) {
         if (definingGlobal) {
-            this.out.println("." + node.getName() + ": ");
+            //String is "@_"
+            this.out.println("@_" + node.getName() + ": ");
 
             this.out.println("\tdq " + node.getData().length());
 
@@ -493,7 +498,7 @@ public class StupidAssemblePrinter implements IRVisitor {
             this.out.println("\"" + ", 0");
         }
         else{
-            this.out.print("." + node.getName() + " ");
+            this.out.print("@_" + node.getName() + " ");
         }
     }
 }

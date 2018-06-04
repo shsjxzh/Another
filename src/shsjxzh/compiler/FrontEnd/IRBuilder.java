@@ -235,11 +235,8 @@ public class IRBuilder implements ASTVisitor {
         else{
             curFunc = irRoot.functionMap.get("_" + node.className + node.getName());
         }
-        //node.irFunction = curFunc;
         //already put!!
-        //irRoot.functionMap.put(curFunc.getName(), curFunc);
         curBB = curFunc.getStartBB();
-        //curFunc.setReturnSize(node.getFuncReturnType().getRegisterSize());
 
         isFuncParam = true;
         for (VarDeclNode varDeclNode : node.getFuncParams()) {
@@ -248,24 +245,27 @@ public class IRBuilder implements ASTVisitor {
         }
         isFuncParam = false;
 
-        //">=" -> ">" is an important optimize
-        if (curFunc.getReturnStmtNum() >= 1) {
-            curReturnBB = new BasicBlock("B_" + irRoot.getBBCountAndIncrease(), curFunc);
+        //todo unfinished
+        if (curFunc.getReturnSize() > 0){
+            //not void
             curReturnReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
             curFunc.addFuncLocalVar(curReturnReg);
+        }
+        else{
+            curReturnReg = null;
+        }
+
+        if (curFunc.getReturnStmtNum() >= 1){
+            curReturnBB = new BasicBlock("B_" + irRoot.getBBCountAndIncrease(), curFunc);
             generateIR(node.getFuncBlock());
             curReturnBB.append(new Return(curReturnBB, curReturnReg));
         }
         else{
-            //do nothing for no return
             generateIR(node.getFuncBlock());
-            if (curFunc.getReturnStmtNum() == 0){
-                //if the return type is not "void", then return 0
-                if (curFunc.getReturnSize() > 0) curBB.finish(new Return (curBB, new IntImme(0)));
-                //void
-                else curBB.finish(new Return(curBB, null));
-            }
-            // else curBB.finish(new Return(curBB, node.getReExpr().regOrImm));
+            //if the return type is not "void", then return 0
+            if (curFunc.getReturnSize() > 0) curBB.finish(new Return (curBB, new IntImme(0)));
+            //void
+            else curBB.finish(new Return(curBB, null));
         }
     }
 
@@ -337,12 +337,13 @@ public class IRBuilder implements ASTVisitor {
         generateIR(node.getReExpr());
         inSideEffect = oldInSideEffect;
 
+        if (curFunc.getReturnSize() > 0){
+            assignNonMemop(curReturnReg, node.getReExpr().regOrImm, node.getReExpr());
+        }
+
         //We will optimize it later
         if (curFunc.getReturnStmtNum() >= 1) {
             //be careful!
-            //curBB.append(new Move(curBB, curReturnReg, node.getReExpr().regOrImm));
-
-            assignNonMemop(curReturnReg, node.getReExpr().regOrImm, node.getReExpr());
             curBB.LinkNextBB(curReturnBB);
 
             if (curReturnBB.predecessorBBMap.size() == 1){
@@ -354,7 +355,6 @@ public class IRBuilder implements ASTVisitor {
             }
 
         }
-        //curReturnBB.append(new Return(curBB, c));
     }
 
     @Override
@@ -1278,22 +1278,13 @@ public class IRBuilder implements ASTVisitor {
         //add "this"
         argvs.add(node.getObject().regOrImm);
 
-        if (method.equals("size")){
+        if (method.equals("size") || method.equals("length")){
             //array.size || string.length
             //Todo double check this
             VirtualRegister destReg = new VirtualRegister("Reg_size_" + irRoot.getRegCountAndIncrease());
             curFunc.addFuncLocalVar(destReg);
             curBB.append(new Load(curBB, destReg, (Register) node.getObject().regOrImm, null, 0, null));
             node.regOrImm = destReg;
-        }
-        else if (method.equals("length")){
-            /*
-            VirtualRegister destReg = new VirtualRegister("Reg_length_" + irRoot.getRegCountAndIncrease());
-            curFunc.addFuncLocalVar(destReg);
-            curBB.append(new Load(curBB, destReg, (Register) node.getObject().regOrImm, null, 0, new IntImme(- 8)));
-            node.regOrImm = destReg;
-            special attention
-            */
         }
         else if (method.equals("substring")){
             VirtualRegister destReg = new VirtualRegister("Reg_substr_" + irRoot.getRegCountAndIncrease());
