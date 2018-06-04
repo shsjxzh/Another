@@ -22,7 +22,7 @@ public class IRBuilder implements ASTVisitor {
     Function curFunc;
 
     BasicBlock curReturnBB;
-    Register curReturnReg;
+    VirtualRegister curReturnReg;
 
     BasicBlock curBreakLoopBB;
     BasicBlock curContinueLoopBB;
@@ -93,10 +93,11 @@ public class IRBuilder implements ASTVisitor {
         //there is no problem when it comes to string, because "stringLiteral" will handle everything
         irRoot.staticDataList.add(data);
 
-        VirtualRegister reg = new VirtualRegister("Reg_" + node.getName());
+        //VirtualRegister reg = new VirtualRegister("Reg_" + node.getName());
+        //curFunc.addFuncLocalVar(reg);
         irRoot.getRegCountAndIncrease();
         //it is not Expr!!
-        node.varReg = reg;
+        node.varReg = data;
 
         if (node.getExpr() != null){
             //check this!!
@@ -104,10 +105,10 @@ public class IRBuilder implements ASTVisitor {
             //tmp operation
             //change when Memory operation is needed
             //curBB.append(new Move(curBB, reg, node.getExpr().regOrImm));
-            assignNonMemop(reg, node.getExpr().regOrImm, node.getExpr());
+            assignNonMemop(data, node.getExpr().regOrImm, node.getExpr());
         }
         else{
-            curBB.append(new Move(curBB, reg, new IntImme(0)));
+            curBB.append(new Move(curBB, data, new IntImme(0)));
         }
 
         //exit SideEffect
@@ -136,13 +137,17 @@ public class IRBuilder implements ASTVisitor {
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
         tmp = new Function("__StringConcat");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
+
         tmp = new Function("__StringEqual");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
         tmp = new Function("__StringLess");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
+
         tmp = new Function("__StringParseInt");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
         tmp = new Function("__StringSubString");
+        irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
+        tmp = new Function("__StringOrd");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
     }
 
@@ -209,7 +214,10 @@ public class IRBuilder implements ASTVisitor {
         //pretend that there will be no parameters for "main"
         curFunc = irRoot.functionMap.get("__init");
         curBB = curFunc.getStartBB();
+
         VirtualRegister reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(reg);
+
         curBB.append(new Call(curBB, irRoot.functionMap.get("main"), new LinkedList<>(), reg));
         //return node will point to a return basic block
         //but there is no need for a init function
@@ -244,6 +252,7 @@ public class IRBuilder implements ASTVisitor {
         if (curFunc.getReturnStmtNum() >= 1) {
             curReturnBB = new BasicBlock("B_" + irRoot.getBBCountAndIncrease(), curFunc);
             curReturnReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(curReturnReg);
             generateIR(node.getFuncBlock());
             curReturnBB.append(new Return(curReturnBB, curReturnReg));
         }
@@ -283,10 +292,14 @@ public class IRBuilder implements ASTVisitor {
             assignNonMemop(reg, node.getExpr().regOrImm, node.getExpr());
         }
         else if (isFuncParam){
-            curFunc.funcParams.add(reg);
+            curFunc.addFuncParams(reg);
         }
         else{
             curBB.append(new Move(curBB, reg, new IntImme(0)));
+        }
+
+        if (!isFuncParam){
+            curFunc.addFuncLocalVar(reg);
         }
 
         //exit SideEffect
@@ -656,8 +669,12 @@ public class IRBuilder implements ASTVisitor {
         generateIR(node.getLeft());
 
         VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(destReg);
+        node.regOrImm = destReg;
         VirtualRegister tmpReg1;
         List<Value> argvs = new ArrayList<>();
+        argvs.add(node.getLeft().regOrImm); argvs.add(node.getRight().regOrImm);
+        //curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringCmp"), argvs, destReg));
         switch (node.getOp()){
             case EQ:
                 argvs.add(node.getLeft().regOrImm);
@@ -678,6 +695,7 @@ public class IRBuilder implements ASTVisitor {
                 argvs.add(node.getLeft().regOrImm);
                 argvs.add(node.getRight().regOrImm);
                 tmpReg1 = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(tmpReg1);
                 curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, tmpReg1));
                 curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringEqual"), argvs, destReg));
                 curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, tmpReg1));
@@ -686,6 +704,7 @@ public class IRBuilder implements ASTVisitor {
                 argvs.add(node.getRight().regOrImm);
                 argvs.add(node.getLeft().regOrImm);
                 tmpReg1 = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(tmpReg1);
                 curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringLess"), argvs, tmpReg1));
                 curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringEqual"), argvs, destReg));
                 curBB.append(new Binary(curBB, Binary.BinaryOp.BitOr, destReg, tmpReg1));
@@ -693,7 +712,7 @@ public class IRBuilder implements ASTVisitor {
                 default:
                     throw new RuntimeException("Invalid string operation");
         }
-        node.regOrImm = destReg;
+
     }
 
     private void intCompareProcess(BinaryOpNode node){
@@ -713,6 +732,7 @@ public class IRBuilder implements ASTVisitor {
 
         //thinking about the type of the oprend
         VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(destReg);
         if (node.getLeft().regOrImm instanceof IntImme ){
             if (node.getRight().regOrImm instanceof IntImme){
                 int l = ((IntImme) node.getLeft().regOrImm).getImmeValue();
@@ -758,6 +778,7 @@ public class IRBuilder implements ASTVisitor {
         switch (node.getOp()){
             case ADD:
                 VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(destReg);
                 List<Value> argvs = new ArrayList<>();
                 argvs.add(node.getLeft().regOrImm);
                 argvs.add(node.getRight().regOrImm);
@@ -790,6 +811,7 @@ public class IRBuilder implements ASTVisitor {
         }
 
         VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(destReg);
         if (node.getLeft().regOrImm instanceof IntImme ){
             if (node.getRight().regOrImm instanceof IntImme){
                 int l = ((IntImme) node.getLeft().regOrImm).getImmeValue();
@@ -818,8 +840,8 @@ public class IRBuilder implements ASTVisitor {
             }
         }
         else {
-            curBB.append(new Move(curBB, destReg, node.getRight().regOrImm));
-            curBB.append(new Binary(curBB, op, destReg, node.getLeft().regOrImm));
+            curBB.append(new Move(curBB, destReg, node.getLeft().regOrImm));
+            curBB.append(new Binary(curBB, op, destReg, node.getRight().regOrImm));
         }
         //in a expr
         node.regOrImm = destReg;
@@ -892,6 +914,7 @@ public class IRBuilder implements ASTVisitor {
 
         //save the old value
         VirtualRegister reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(reg);
         curBB.append(new Move(curBB, reg, node.getBody().regOrImm));
         node.regOrImm = reg;
 
@@ -937,6 +960,7 @@ public class IRBuilder implements ASTVisitor {
             case BIT_NOT:
                 generateIR(node.getBody());
                 reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(reg);
                 node.regOrImm = reg;
                 curBB.append(new Move(curBB, reg, node.getBody().regOrImm));
                 curBB.append(new Unary(curBB, Unary.UnaryOp.BitNot, reg));
@@ -944,6 +968,7 @@ public class IRBuilder implements ASTVisitor {
             case NEG:
                 generateIR(node.getBody());
                 reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(reg);
                 node.regOrImm = reg;
                 curBB.append(new Move(curBB, reg, node.getBody().regOrImm));
                 curBB.append(new Unary(curBB, Unary.UnaryOp.BitNot, reg));
@@ -1002,10 +1027,12 @@ public class IRBuilder implements ASTVisitor {
         LValueGetAddress = oldLValueGetAddress;
 
         VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(destReg);
         if (LValueGetAddress){
             node.Base = (Register) node.getArray().regOrImm;
             if (node.getIndex().regOrImm instanceof IntImme){
                 VirtualRegister ImmeReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(ImmeReg);
                 curBB.append(new Move(curBB, ImmeReg, node.getIndex().regOrImm));
                 node.Index = ImmeReg;
             }
@@ -1016,6 +1043,7 @@ public class IRBuilder implements ASTVisitor {
         else {
             if (node.getIndex().regOrImm instanceof IntImme){
                 VirtualRegister ImmeReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(ImmeReg);
                 curBB.append(new Move(curBB, ImmeReg, node.getIndex().regOrImm));
                 //the scale is set for 8!!
                 //the first element is set to store size!!
@@ -1046,6 +1074,7 @@ public class IRBuilder implements ASTVisitor {
         }
         else {
             VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
             curBB.append(new Load(curBB, destReg, (Register) node.getObject().regOrImm, null, 0, new IntImme(belongClass.MemOffset.get(node.getMemberRef()))));
             node.regOrImm = destReg;
         }
@@ -1065,6 +1094,7 @@ public class IRBuilder implements ASTVisitor {
         if (curDim >= arrayDim.size()) return;
 
         VirtualRegister itrReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(itrReg);
         curBB.append(new Move(curBB, itrReg, new IntImme(0)));
 
         BasicBlock Cond = new BasicBlock("B_cond_" + irRoot.getBBCountAndIncrease(), curFunc);
@@ -1076,6 +1106,7 @@ public class IRBuilder implements ASTVisitor {
 
         curBB = Cond;
         VirtualRegister cmpReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(cmpReg);
         curBB.append(new IntCompare(curBB, IntCompare.CompareOp.LE, cmpReg, itrReg, arrayDim.get(curDim - 1).regOrImm));
         curBB.finish(new Branch(curBB, cmpReg, Body.getName(), Merge.getName()));
         curBB.LinkNextBB(Body);
@@ -1089,6 +1120,7 @@ public class IRBuilder implements ASTVisitor {
         //link the Body!!
         curBB = Body;
         VirtualRegister tmpAlloc = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(tmpAlloc);
         curBB.append(new Move(curBB, tmpAlloc, new IntImme(8)/*the size of build in type or pointer*/));
         curBB.append(new Binary(curBB, Binary.BinaryOp.Mul, tmpAlloc, curExprDim.regOrImm));
         curBB.append(new Binary(curBB, Binary.BinaryOp.Add, tmpAlloc, new IntImme(intSize)));
@@ -1118,6 +1150,7 @@ public class IRBuilder implements ASTVisitor {
             //user-defined class
             //Todo : may call the constructor!!
             VirtualRegister reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(reg);
             curBB.append(new HeapAllocate(curBB, reg, new IntImme(type.getTypeDefinition().getAllocSize())));
             node.regOrImm = reg;
             if (node.getExprType().getTypeDefinition().getConstructMethod() != null){
@@ -1134,6 +1167,7 @@ public class IRBuilder implements ASTVisitor {
             ExprNode firstDim = node.getExprDim().get(0);
             generateIR(firstDim);
             VirtualRegister reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(reg);
             node.regOrImm = reg;
             curBB.append(new Move(curBB, reg, new IntImme(node.getExprType().getRegisterSize())));
             curBB.append(new Binary(curBB, Binary.BinaryOp.Mul, reg, firstDim.regOrImm));
@@ -1202,17 +1236,20 @@ public class IRBuilder implements ASTVisitor {
         }
         else if (funcName.equals("getString")){
             VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
             curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__GetString"), new ArrayList<>(), destReg));
             node.regOrImm = destReg;
         }
         else if (funcName.equals("getInt")){
             VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
             curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__GetInt"), new ArrayList<>(), destReg));
             node.regOrImm = destReg;
         }
         else if (funcName.equals("toString")){
             generateIR(node.getFuncParams().get(0));
             VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
             List<Value> argvs = new ArrayList<>();
             argvs.add(node.getFuncParams().get(0).regOrImm);
             curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__ToString"), argvs, destReg));
@@ -1234,27 +1271,39 @@ public class IRBuilder implements ASTVisitor {
         //add "this"
         argvs.add(node.getObject().regOrImm);
 
-        if (method.equals("size") || method.equals("length")){
+        if (method.equals("size")){
             //array.size || string.length
             //Todo double check this
-            VirtualRegister destReg = new VirtualRegister("size_" + irRoot.getRegCountAndIncrease());
+            VirtualRegister destReg = new VirtualRegister("Reg_size_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
             curBB.append(new Load(curBB, destReg, (Register) node.getObject().regOrImm, null, 0, null));
             node.regOrImm = destReg;
         }
+        else if (method.equals("length")){
+            /*
+            VirtualRegister destReg = new VirtualRegister("Reg_length_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
+            curBB.append(new Load(curBB, destReg, (Register) node.getObject().regOrImm, null, 0, new IntImme(- 8)));
+            node.regOrImm = destReg;
+            special attention
+            */
+        }
         else if (method.equals("substring")){
-            VirtualRegister destReg = new VirtualRegister("substr_" + irRoot.getRegCountAndIncrease());
+            VirtualRegister destReg = new VirtualRegister("Reg_substr_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
             curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringSubString"), argvs, destReg));
             node.regOrImm = destReg;
         }
         else if (method.equals("parseInt")){
-            VirtualRegister destReg = new VirtualRegister("substr_" + irRoot.getRegCountAndIncrease());
+            VirtualRegister destReg = new VirtualRegister("Reg_parInt_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
             curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringParseInt"), argvs, destReg));
             node.regOrImm = destReg;
         }
         else if (method.equals("ord")){
-            //Todo double check this
-            VirtualRegister destReg = new VirtualRegister("ord_" + irRoot.getRegCountAndIncrease());
-            curBB.append(new Load(curBB, destReg, (Register) node.getObject().regOrImm, (Register) argvs.get(0), 1, new IntImme(intSize)));
+            VirtualRegister destReg = new VirtualRegister("Reg_ord_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
+            curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringOrd"), argvs, destReg));
             node.regOrImm = destReg;
         }
         else throw new RuntimeException("Undefined build-in class method");
@@ -1280,6 +1329,7 @@ public class IRBuilder implements ASTVisitor {
             node.getFuncParams().forEach(x -> argvs.add(x.regOrImm));
             if (!node.getFuncDefinition().getFuncReturnType().isNull()) {
                 VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(destReg);
                 curBB.append(new Call(curBB, node.getFuncDefinition().irFunction, argvs, destReg));
                 node.regOrImm = destReg;
             }
@@ -1313,6 +1363,7 @@ public class IRBuilder implements ASTVisitor {
             argvs.add(node.getObject().regOrImm);
             if (!node.getFuncDefinition().getFuncReturnType().isNull()) {
                 VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(destReg);
                 curBB.append(new Call(curBB, node.getFuncDefinition().irFunction, argvs, destReg));
                 node.regOrImm = destReg;
             }

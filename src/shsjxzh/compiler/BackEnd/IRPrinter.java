@@ -45,9 +45,9 @@ public class IRPrinter implements IRVisitor {
     public void visit(Function node) {
         if (node.isBuildIn()) return;
         myPrint(node.getName() + ": ");
-        for (VirtualRegister funcParam : node.funcParams) {
+        /*for (VirtualRegister funcParam : node.funcParams) {
             PrintIR(funcParam);
-        }
+        }*/
         this.out.println();
         addIndent();
         PrintIR(node.getStartBB());
@@ -231,7 +231,7 @@ public class IRPrinter implements IRVisitor {
             PrintIR(node.getIndex());
         }
         if (node.getDisplacement() != null){
-            this.out.print("+ ");
+            if(node.getDisplacement().getImmeValue() >= 0) this.out.print("+ ");
             PrintIR(node.getDisplacement());
         }
         this.out.println();
@@ -248,7 +248,7 @@ public class IRPrinter implements IRVisitor {
             PrintIR(node.getIndex());
         }
         if (node.getDisplacement() != null){
-            this.out.print("+ ");
+            if(node.getDisplacement().getImmeValue() >= 0) this.out.print("+ ");
             PrintIR(node.getDisplacement());
         }
         this.out.println(")");
@@ -290,7 +290,7 @@ public class IRPrinter implements IRVisitor {
             this.out.println("\tresb " + node.getSpaceSize());
         }
         else {
-            this.out.println("._" + node.getName() + " ");
+            this.out.print("._" + node.getName() + " ");
         }
     }
 

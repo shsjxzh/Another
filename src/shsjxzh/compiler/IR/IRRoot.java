@@ -20,7 +20,7 @@ public class IRRoot extends IR{
 
     //be careful to add sth
     public IRRoot() {
-       stringMap.put("\\n", new StaticString("\\n", getStrCountAndIncrease()));
+       //stringMap.put("\\n", new StaticString("\\n", getStrCountAndIncrease()));
 
        //for global variable initialize
        //we will simplify it later

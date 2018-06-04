@@ -78,6 +78,9 @@ public class X_compiler {
         semanticAnalysis();
         buildIR();
         //printIR();
+
+        //this.printOut.println("=============== assemble =================");
+
         codeGenerator();
     }
 

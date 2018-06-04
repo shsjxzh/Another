@@ -8,9 +8,26 @@ import java.util.*;
 public class Function extends IR{
     private String name;
     private BasicBlock startBB;
-    public List<VirtualRegister> funcParams = new ArrayList<>();
+    //public List<VirtualRegister> funcParams = new ArrayList<>();
+    public Map<String, VirtualRegister> funcParams = new LinkedHashMap<>();
     public Map<String, VirtualRegister> funcLocalVarRegs = new LinkedHashMap<>();
     public Map<String, Integer> localVarPos = new HashMap<>();
+    public Map<String, Integer> paramPos = new HashMap<>();
+
+    private int curParamPos = 0;
+    private int curLocalVarPos = 0;
+
+    public void addFuncParams(VirtualRegister reg){
+        funcParams.put(reg.getName(), reg);
+        paramPos.put(reg.getName(), curParamPos);
+        curParamPos += 8; //int size
+    }
+
+    public void addFuncLocalVar(VirtualRegister reg){
+        funcLocalVarRegs.put(reg.getName(), reg);
+        localVarPos.put(reg.getName(), curLocalVarPos);
+        curLocalVarPos += 8; //int size
+    }
 
     //private BasicBlock exitBB;
     private int returnSize;

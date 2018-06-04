@@ -1,5 +1,6 @@
 package shsjxzh.compiler.IR.Value;
 
+import shsjxzh.compiler.IR.Function;
 import shsjxzh.compiler.IR.IRVisitor;
 
 public class VirtualRegister extends Register {
@@ -10,4 +11,8 @@ public class VirtualRegister extends Register {
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }
+
+
+    //for stupid code generator
+    //public String physicalReg = null;
 }
