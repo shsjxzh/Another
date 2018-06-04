@@ -188,14 +188,14 @@ public class StupidAssemblePrinter implements IRVisitor {
                 break;
             case Mod:
                 //Todo make sure the mod instruction!!
-                this.out.println("\tcltq");
+                this.out.println("\txor rdx, rdx");
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                 this.out.println("\tidiv rcx");
                 //this.out.print("mov rax rdx");
                 break;
             case Div:
                 //Todo make sure the extend instruction!!
-                this.out.println("\tcltq");
+                this.out.println("\txor rdx, rdx");
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                 this.out.println("\tidiv rcx");
                 break;
