@@ -426,9 +426,7 @@ public class StupidAssemblePrinter implements IRVisitor {
             this.out.print("qword [rbp + " + (16 + curFunc.paramPos.get(node.getName())) + "] ");
         } else if (curFunc.funcLocalVarRegs.containsKey(node.getName())) {
             //if (curFunc.localVarPos.get(node.getName()) != 0)
-            this.out.print(("[rbp - " + (curFunc.localVarPos.get(node.getName()) + 8) + "] "));  //qword
-            //else
-                //this.out.print(("[rbp]"));  //qword
+            this.out.print(("qword [rbp - " + (curFunc.localVarPos.get(node.getName()) + 8) + "] "));  //
         }
         else {
             throw new RuntimeException("register loss!");
