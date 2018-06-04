@@ -409,15 +409,23 @@ public class IRBuilder implements ASTVisitor {
         curBB.finish();
         curBB.setAdjacentBB(forCond);
 
-        node.getCond().ifTrue = forBody;
-        node.getCond().ifFalse = forMerge;
-        curBB = forCond;
-        //the ifTrue and ifFalse should not generate new BB
-        //set SideEffect
-        boolean oldInSideEffect = inSideEffect;
-        inSideEffect = true;
-        generateIR(node.getCond());
-        inSideEffect = oldInSideEffect;
+        if (node.getCond() != null) {
+            node.getCond().ifTrue = forBody;
+            node.getCond().ifFalse = forMerge;
+            curBB = forCond;
+            //the ifTrue and ifFalse should not generate new BB
+            //set SideEffect
+            boolean oldInSideEffect = inSideEffect;
+            inSideEffect = true;
+            generateIR(node.getCond());
+            inSideEffect = oldInSideEffect;
+        }
+        else{
+            forCond.LinkNextBB(forBody);
+            forCond.setAdjacentBB(forBody);
+            forCond.finish();
+        }
+
 
         BasicBlock oldBreakLoop = curBreakLoopBB;
         BasicBlock oldContinueLoop = curContinueLoopBB;
