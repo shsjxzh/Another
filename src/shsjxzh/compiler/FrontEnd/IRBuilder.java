@@ -426,13 +426,20 @@ public class IRBuilder implements ASTVisitor {
 
         curBB = forBody;
         generateIR(node.getBody());
-        if (!forBody.isFinish()){
-            curBB.finish(new Jump(curBB, forIter.getName()));
+        if (!curBB.isFinish()){
+            //curBB.finish(new Jump(curBB, forIter.getName()));
+            //the curBB may change!
+            curBB.finish();
             curBB.LinkNextBB(forIter);
+            curBB.setAdjacentBB(forIter);
         }
 
         curBB = forIter;
+        //oldInSideEffect = inSideEffect;
+        //inSideEffect = true;
         generateIR(node.getIter());
+        //inSideEffect = oldInSideEffect;
+
         curBB.finish(new Jump(curBB, forCond.getName()));
         curBB.LinkNextBB(forCond);
 
