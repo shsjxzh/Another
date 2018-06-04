@@ -16,6 +16,7 @@ import shsjxzh.compiler.Scope.LocalScope;
 import shsjxzh.compiler.Scope.Scope;
 import shsjxzh.compiler.Type.Type;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,8 @@ public class SemanticAnalyzer implements ASTVisitor{
 
     //the latest
     private Map<String, ClassDeclNode> typeDefinitions;
+
+    private FuncDeclNode sizeFunc;
 
     public SemanticAnalyzer(){
         //aim:
@@ -128,6 +131,10 @@ public class SemanticAnalyzer implements ASTVisitor{
         //preprocess for forward reference
         //first preprocess: define all the types
         //second preprocess: build all function and class scope for forward reference
+
+        //sizeFunc init
+        sizeFunc = new FuncDeclNode(null, new Type("int", 0), null, "size", new ArrayList<>(), true);
+
         List<DeclNode> decls = node.getDeclnodes();
         for (DeclNode decl : decls) {
             if (decl instanceof ClassDeclNode) {
@@ -539,6 +546,7 @@ public class SemanticAnalyzer implements ASTVisitor{
         if (node.getMethodName().equals("size")){
             if (node.getMethodParams().size() != 0) throw new ErrorHandler("Unmatched function params type", node.getPos());
             if (!node.getObject().exprType.isArray()) throw new ErrorHandler("Invalild use of \"size\"", node.getPos());
+            node.setFuncDefinition(sizeFunc);
             return;
         }
 

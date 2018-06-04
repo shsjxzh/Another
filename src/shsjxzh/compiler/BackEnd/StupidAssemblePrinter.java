@@ -369,12 +369,12 @@ public class StupidAssemblePrinter implements IRVisitor {
             AssemblePrint(node.getIndex());
             this.out.println();
         }
-        this.out.print("\tmove rax, [");
+        this.out.print("\tmov rax, qword [");
         if (node.getBase()!= null){
             this.out.print("rcx ");
         }
         if (node.getIndex() != null){
-            this.out.print( "+ " + node.getScale() + "* rdx");
+            this.out.print( "+ " + "rdx * " + node.getScale());
         }
         if (node.getDisplacement() != null){
             this.out.print("+ ");
@@ -401,12 +401,12 @@ public class StupidAssemblePrinter implements IRVisitor {
         AssemblePrint(node.getSource());
         this.out.println();
 
-        this.out.print("\tmov [");
+        this.out.print("\tmov qword [");
         if (node.getBase()!= null){
             this.out.print("rcx ");
         }
         if (node.getIndex() != null){
-            this.out.print( "+ " + node.getScale() + "* rdx");
+            this.out.print( "+ " + "rdx * " + node.getScale());
         }
         if (node.getDisplacement() != null){
             this.out.print("+ ");
