@@ -144,6 +144,8 @@ public class IRBuilder implements ASTVisitor {
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
         tmp = new Function("__StringLEqual");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
+        tmp = new Function("__StringNEqual");
+        irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
 
         tmp = new Function("__StringParseInt");
         irRoot.buildInFunctionMap.put(tmp.getName(), tmp);
@@ -696,6 +698,11 @@ public class IRBuilder implements ASTVisitor {
         //argvs.add(node.getLeft().regOrImm); argvs.add(node.getRight().regOrImm);
         //curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringCmp"), argvs, destReg));
         switch (node.getOp()){
+            case NEQ:
+                argvs.add(node.getLeft().regOrImm);
+                argvs.add(node.getRight().regOrImm);
+                curBB.append(new Call(curBB, irRoot.buildInFunctionMap.get("__StringNEqual"), argvs, destReg));
+                break;
             case EQ:
                 argvs.add(node.getLeft().regOrImm);
                 argvs.add(node.getRight().regOrImm);
@@ -724,7 +731,9 @@ public class IRBuilder implements ASTVisitor {
                 default:
                     throw new RuntimeException("Invalid string operation");
         }
-
+        if (inLogicalGeneration(node)){
+            setShortCircuitLeaf(node);
+        }
     }
 
     private void intCompareProcess(BinaryOpNode node){
@@ -776,10 +785,11 @@ public class IRBuilder implements ASTVisitor {
 
         if (inLogicalGeneration(node)){
             //the leaf of the condition
-            curBB.finish(new Branch(curBB, destReg, node.ifTrue.getName(), node.ifFalse.getName()));
+            /*curBB.finish(new Branch(curBB, destReg, node.ifTrue.getName(), node.ifFalse.getName()));
             curBB.LinkNextBB(node.ifTrue);
             curBB.LinkNextBB(node.ifFalse);
-            curBB.setAdjacentBB(node.ifTrue);
+            curBB.setAdjacentBB(node.ifTrue);*/
+            setShortCircuitLeaf(node);
         }
     }
 
