@@ -1371,8 +1371,8 @@ public class IRBuilder implements ASTVisitor {
         //set SideEffect
         boolean oldInSideEffect = inSideEffect;
         inSideEffect = true;
-        //be carefull!
-        generateIR(node.getObject());
+        //be carefull! it will generate in parameters!!
+        //generateIR(node.getObject());
 
         if (node.getFuncDefinition().isBuildIn){
             processBuildInClassMethod(node);
@@ -1381,8 +1381,6 @@ public class IRBuilder implements ASTVisitor {
             node.getMethodParams().forEach(x -> generateIR(x));
             List<Value> argvs = new ArrayList<>();
             node.getMethodParams().forEach(x -> argvs.add(x.regOrImm));
-            //add "this" parameter
-            argvs.add(node.getObject().regOrImm);
             if (!node.getFuncDefinition().getFuncReturnType().isNull()) {
                 VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
                 curFunc.addFuncLocalVar(destReg);

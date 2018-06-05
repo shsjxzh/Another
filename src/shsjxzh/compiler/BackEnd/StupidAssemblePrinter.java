@@ -346,8 +346,9 @@ public class StupidAssemblePrinter implements IRVisitor {
             List<Value> reverseVar = node.getArgvs().subList(0, node.getArgvs().size());
             Collections.reverse(reverseVar);
             for (Value value : reverseVar) {
-                this.out.print("\tmov rax, "); AssemblePrint(value); this.out.println();
-                this.out.println("\tpush rax");
+                //this.out.print("\tmov rax, "); AssemblePrint(value); this.out.println();
+                //this.out.println("\tpush rax");
+                this.out.print("\tpush "); AssemblePrint(value); this.out.println();
             }
             //function name must be add @!
             this.out.println("\tcall @" + node.getCallFunc().getName());
