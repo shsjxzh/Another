@@ -1290,8 +1290,6 @@ public class IRBuilder implements ASTVisitor {
         List<Value> argvs = new ArrayList<>();
         node.getMethodParams().forEach(x -> argvs.add(x.regOrImm));
 
-        //add "this"
-        argvs.add(node.getObject().regOrImm);
 
         if (method.equals("size") || method.equals("length")){
             //array.size || string.length
