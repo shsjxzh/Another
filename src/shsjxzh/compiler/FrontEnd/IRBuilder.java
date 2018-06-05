@@ -563,13 +563,13 @@ public class IRBuilder implements ASTVisitor {
             //when it is the leaf of condition
             if (node.getValue()) {
                 //Todo !! be careful!!
-                //curBB.finish(new Jump(curBB, node.ifTrue.getName()));
+                curBB.finish(new Jump(curBB, node.ifTrue.getName()));
                 curBB.LinkNextBB(node.ifTrue);
                 curBB.setAdjacentBB(node.ifTrue);
             }
             else {
                 //Todo !! be careful!!
-                //curBB.finish(new Jump(curBB, node.ifFalse.getName()));
+                curBB.finish(new Jump(curBB, node.ifFalse.getName()));
                 curBB.LinkNextBB(node.ifFalse);
                 curBB.setAdjacentBB(node.ifFalse);
             }

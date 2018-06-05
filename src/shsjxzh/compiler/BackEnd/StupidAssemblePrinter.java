@@ -292,9 +292,11 @@ public class StupidAssemblePrinter implements IRVisitor {
 
     @Override
     public void visit(Jump node) {
-        String nextOutBB = node.getBelongBB().getAdjacentBB().getName();
-        if (node.getNextLabel().equals(nextOutBB) && !BBVisit.contains(nextOutBB)) return;
-        else this.out.println("\tjmp " + "__" + node.getNextLabel());
+        if (node.getBelongBB().getAdjacentBB() != null){
+            String nextOutBB = node.getBelongBB().getAdjacentBB().getName();
+            if (node.getNextLabel().equals(nextOutBB) && !BBVisit.contains(nextOutBB)) return;
+        }
+        this.out.println("\tjmp " + "__" + node.getNextLabel());
     }
 
     @Override
