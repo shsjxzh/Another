@@ -142,7 +142,7 @@ public class StupidAssemblePrinter implements IRVisitor {
         for (Instruction itr = node.getHeadIns(); itr!= null; itr = itr.Next()){
             AssemblePrint(itr);
             //must be drop before push
-            //this.out.println();
+            this.out.println();
         }
 
         //this.out.println();
@@ -292,7 +292,9 @@ public class StupidAssemblePrinter implements IRVisitor {
 
     @Override
     public void visit(Jump node) {
-        this.out.println("\tjmp " + "__" + node.getNextLabel());
+        String nextOutBB = node.getBelongBB().getAdjacentBB().getName();
+        if (node.getNextLabel().equals(nextOutBB) && !BBVisit.contains(nextOutBB)) return;
+        else this.out.println("\tjmp " + "__" + node.getNextLabel());
     }
 
     @Override

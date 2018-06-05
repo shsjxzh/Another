@@ -363,7 +363,7 @@ public class IRBuilder implements ASTVisitor {
     public void visit(IfStmtNode node) {
         BasicBlock BBTrue = new BasicBlock("B_ifTrue_" + irRoot.getBBCountAndIncrease(),curFunc);
         BasicBlock BBFalse = (node.getOtherwise() != null)? new BasicBlock("B_ifFalse_" + irRoot.getBBCountAndIncrease(), curFunc):null;
-        BasicBlock BBMerge = new BasicBlock("B_merge_"+ irRoot.getBBCountAndIncrease(), curFunc);
+        BasicBlock BBMerge = new BasicBlock("B_ifMerge_"+ irRoot.getBBCountAndIncrease(), curFunc);
 
         node.getCond().ifTrue = BBTrue;
         if (node.getOtherwise() == null) node.getCond().ifFalse = BBMerge;
@@ -439,7 +439,7 @@ public class IRBuilder implements ASTVisitor {
         if (!curBB.isFinish()){
             //curBB.finish(new Jump(curBB, forIter.getName()));
             //the curBB may change!
-            curBB.finish();
+            curBB.finish(new Jump(curBB, forIter.getName()));
             curBB.LinkNextBB(forIter);
             curBB.setAdjacentBB(forIter);
         }

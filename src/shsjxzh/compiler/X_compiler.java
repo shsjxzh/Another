@@ -77,11 +77,11 @@ public class X_compiler {
         //printAST();
         semanticAnalysis();
         buildIR();
-        //printIR();
+        printIR();
 
         //this.printOut.println(";=============== assemble =================");
 
-        codeGenerator();
+        //codeGenerator();
     }
 
     public static void main(String[] args) throws Exception{
