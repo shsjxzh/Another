@@ -980,7 +980,7 @@ public class IRBuilder implements ASTVisitor {
                 curFunc.addFuncLocalVar(reg);
                 node.regOrImm = reg;
                 curBB.append(new Move(curBB, reg, node.getBody().regOrImm));
-                curBB.append(new Unary(curBB, Unary.UnaryOp.BitNot, reg));
+                curBB.append(new Unary(curBB, Unary.UnaryOp.Neg, reg));
                 break;
             case INC:
                 //set SideEffect
