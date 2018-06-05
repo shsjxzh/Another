@@ -284,8 +284,8 @@ public class IRBuilder implements ASTVisitor {
         boolean oldInSideEffect = inSideEffect;
         inSideEffect = true;
 
-        VirtualRegister reg = new VirtualRegister("Reg_" + node.getName());
-        irRoot.getRegCountAndIncrease();
+        VirtualRegister reg = new VirtualRegister("Reg_" + node.getName() + irRoot.getRegCountAndIncrease());
+        //irRoot.getRegCountAndIncrease();
         node.varReg = reg;
 
         if (node.getExpr() != null){
@@ -345,16 +345,18 @@ public class IRBuilder implements ASTVisitor {
 
         //We will optimize it later
         if (curFunc.getReturnStmtNum() >= 1) {
-            //be careful!
+            //be careful for this change !!
             curBB.LinkNextBB(curReturnBB);
+            curBB.setAdjacentBB(curReturnBB);
+            curBB.finish(new Jump(curBB, curReturnBB.getName()));
 
-            if (curReturnBB.predecessorBBMap.size() == 1){
+            /*if (curReturnBB.predecessorBBMap.size() == 1){
                 curBB.setAdjacentBB(curReturnBB);
                 curBB.finish();
             }
             else {
                 curBB.finish(new Jump(curBB, curReturnBB.getName()));
-            }
+            }*/
 
         }
     }
@@ -449,9 +451,10 @@ public class IRBuilder implements ASTVisitor {
         //inSideEffect = true;
         generateIR(node.getIter());
         //inSideEffect = oldInSideEffect;
-
-        curBB.finish(new Jump(curBB, forCond.getName()));
-        curBB.LinkNextBB(forCond);
+        if (!curBB.isFinish()) {
+            curBB.finish(new Jump(curBB, forCond.getName()));
+            curBB.LinkNextBB(forCond);
+        }
 
         curBreakLoopBB = oldBreakLoop;
         curContinueLoopBB = oldContinueLoop;
