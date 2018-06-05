@@ -1336,18 +1336,29 @@ public class IRBuilder implements ASTVisitor {
             processBuildInFunc(node);
         }
         else {
-            //lambda expr
-            node.getFuncParams().forEach(x -> generateIR(x));
-            List<Value> argvs = new ArrayList<>();
-            node.getFuncParams().forEach(x -> argvs.add(x.regOrImm));
-            if (!node.getFuncDefinition().getFuncReturnType().isNull()) {
-                VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
-                curFunc.addFuncLocalVar(destReg);
-                curBB.append(new Call(curBB, node.getFuncDefinition().irFunction, argvs, destReg));
-                node.regOrImm = destReg;
+            if (node.inClassMethod != null){
+                //replace it!
+                node.inClassMethod.ifTrue = node.ifTrue;
+                node.inClassMethod.ifFalse = node.ifFalse;
+                generateIR(node.inClassMethod);
+                node.regOrImm = node.inClassMethod.regOrImm;
+                node.Base = node.inClassMethod.Base;
+                node.Index = node.inClassMethod.Index;
+                node.scale = node.inClassMethod.scale;
+                node.displacement = node.inClassMethod.displacement;
             }
-            else{
-                curBB.append(new Call(curBB, node.getFuncDefinition().irFunction, argvs,null));
+            else {
+                node.getFuncParams().forEach(x -> generateIR(x));
+                List<Value> argvs = new ArrayList<>();
+                node.getFuncParams().forEach(x -> argvs.add(x.regOrImm));
+                if (!node.getFuncDefinition().getFuncReturnType().isNull()) {
+                    VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                    curFunc.addFuncLocalVar(destReg);
+                    curBB.append(new Call(curBB, node.getFuncDefinition().irFunction, argvs, destReg));
+                    node.regOrImm = destReg;
+                } else {
+                    curBB.append(new Call(curBB, node.getFuncDefinition().irFunction, argvs, null));
+                }
             }
         }
 

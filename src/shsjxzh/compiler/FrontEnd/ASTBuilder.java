@@ -23,6 +23,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     private void initialize(Position pos, List<DeclNode> declNodes){
         //.size() is lost !! be carefull!!
         //the build-in class do not need add "this" parameter
+        //Todo: check the parameters "this" here!
 
         BlockNode emptyBlock = new BlockNode(pos,new ArrayList<>());
         //int
@@ -30,14 +31,17 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
                 new ArrayList<>(),null, true) );
 
         //string
+        VarDeclNode stringVar = new VarDeclNode(pos, new Type("string",0), "this", null);
         List<FuncDeclNode> stringMethod = new ArrayList<>();
         //int length()
-        FuncDeclNode length = new FuncDeclNode(pos, new Type("int", 0), emptyBlock, "length", new ArrayList<>());
+        List<VarDeclNode> lenList = new ArrayList<>();
+        lenList.add(stringVar);
+        FuncDeclNode length = new FuncDeclNode(pos, new Type("int", 0), emptyBlock, "length", lenList);
         length.setBuildIn(true);
         stringMethod.add(length);
 
         //int parseInt()
-        FuncDeclNode parseInt = new FuncDeclNode(pos, new Type("int",0), emptyBlock, "parseInt", new ArrayList<>());
+        FuncDeclNode parseInt = new FuncDeclNode(pos, new Type("int",0), emptyBlock, "parseInt", lenList);
         parseInt.setBuildIn(true);
         stringMethod.add(parseInt);
 
@@ -45,6 +49,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         List<VarDeclNode> subParams = new ArrayList<>();
         subParams.add(new VarDeclNode(pos,new Type("int",0), "left",null));
         subParams.add(new VarDeclNode(pos, new Type("int", 0), "right",null));
+        subParams.add(stringVar);
         FuncDeclNode substring = new FuncDeclNode(pos, new Type("string",0), emptyBlock, "substring", subParams);
         substring.setBuildIn(true);
         stringMethod.add(substring);
@@ -52,6 +57,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         //int ord(int pos)
         List<VarDeclNode> ordParams = new ArrayList<>();
         ordParams.add(new VarDeclNode(pos, new Type("int", 0), "pos",null));
+        ordParams.add(stringVar);
         FuncDeclNode ord = new FuncDeclNode(pos, new Type("int",0), emptyBlock, "ord", ordParams);
         ord.setBuildIn(true);
         stringMethod.add(ord);
@@ -167,12 +173,14 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
                 classMember.add((VarDeclNode) childNode);
             }
             else if (childNode instanceof FuncDeclNode){
+                ((FuncDeclNode) childNode).setInClass(true);
                 if (((FuncDeclNode) childNode).getName().equals(className)){
                     throw new ErrorHandler("Error constructor", childNode.getPos());
                 }
 
                 //add "this" parameters for further check
                 VarDeclNode thisVar = new VarDeclNode(childNode.getPos(), new Type(className,0), "this", null);
+                //don't set it in class to prevent generate copy
                 ((FuncDeclNode) childNode).getFuncParams().add(thisVar);
                 ((FuncDeclNode) childNode).className = className;
 
@@ -410,6 +418,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
                 methodParams.add(childNode);
             }
         }
+        methodParams.add(object);
         return new MethodAccessNode(methodPos, object, methodName, methodParams);
     }
 

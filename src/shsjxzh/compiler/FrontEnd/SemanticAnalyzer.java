@@ -499,6 +499,18 @@ public class SemanticAnalyzer implements ASTVisitor{
         if (decl!= null){
             if (decl instanceof FuncDeclNode){
                 //connecting the entities
+                if (((FuncDeclNode) decl).isInClass()){
+                    //VarDeclNode thisVar = new VarDeclNode(node.getPos(), new Type(className,0), "this", null);
+                    VariableNode thisVar = new VariableNode(node.getPos(), "this");
+                    //checkAndInitType(thisVar);
+                    node.getFuncParams().add(thisVar);
+
+                    node.inClassMethod = new MethodAccessNode(node.getPos(), new ThisNode(node.getPos()), node.getFuncName(), node.getFuncParams());
+                    checkAndInitType(node.inClassMethod);
+                    node.setFuncDefinition((FuncDeclNode) decl);
+                    return;
+                }
+                //do it because it is necessary for check
                 node.setFuncDefinition((FuncDeclNode) decl);
             }
             else throw new ErrorHandler("Error use of entities \"" + node.getFuncName() + "\"" , node.getPos());
@@ -547,7 +559,7 @@ public class SemanticAnalyzer implements ASTVisitor{
 
         //the self defined "size()" has been handled, now it is the buildin "size()"
         if (node.getMethodName().equals("size")){
-            if (node.getMethodParams().size() != 0) throw new ErrorHandler("Unmatched function params type", node.getPos());
+            if (node.getMethodParams().size() != 1) throw new ErrorHandler("Unmatched function params type", node.getPos());
             if (!node.getObject().exprType.isArray()) throw new ErrorHandler("Invalild use of \"size\"", node.getPos());
             node.setFuncDefinition(sizeFunc);
             return;

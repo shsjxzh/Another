@@ -45,4 +45,6 @@ public class CallNode extends ExprNode{
     public void initExprType() {
         exprType = funcDefinition.getFuncReturnType();
     }
+
+    public MethodAccessNode inClassMethod = null;
 }

@@ -63,6 +63,16 @@ public class FuncDeclNode extends DeclNode {
         this.isBuildIn = isBuildIn;
     }
 
+    private boolean inClass = false;
+
+    public void setInClass(boolean inClass) {
+        this.inClass = inClass;
+    }
+
+    public boolean isInClass() {
+        return inClass;
+    }
+
     public String className = null;
 
 }
