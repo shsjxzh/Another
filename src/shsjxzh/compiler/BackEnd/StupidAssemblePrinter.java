@@ -148,7 +148,9 @@ public class StupidAssemblePrinter implements IRVisitor {
         //this.out.println();
 
         //try to print
-        AssemblePrint(node.getAdjacentBB());
+        if (node.getAdjacentBB() != null) {
+            AssemblePrint(node.getAdjacentBB());
+        }
 
         node.succssorBBMap.values().forEach(this::visit);
     }
@@ -300,6 +302,9 @@ public class StupidAssemblePrinter implements IRVisitor {
         AssemblePrint(node.getCond());
         this.out.println(", 0");
         this.out.println("\tje " + "__" + node.getOtherwiseLabel());
+        if (BBVisit.contains(node.getThenLabel())){
+            this.out.println("\tjmp "+ "__" + node.getThenLabel());
+        }
     }
 
     @Override

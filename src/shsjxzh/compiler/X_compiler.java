@@ -79,7 +79,7 @@ public class X_compiler {
         buildIR();
         //printIR();
 
-        //this.printOut.println("=============== assemble =================");
+        //this.printOut.println(";=============== assemble =================");
 
         codeGenerator();
     }
