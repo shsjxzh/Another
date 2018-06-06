@@ -104,7 +104,6 @@ public class IRBuilder implements ASTVisitor {
             generateIR(node.getExpr());
             //tmp operation
             //change when Memory operation is needed
-            //curBB.append(new Move(curBB, reg, node.getExpr().regOrImm));
             assignNonMemop(data, node.getExpr().regOrImm, node.getExpr());
         }
         else{
