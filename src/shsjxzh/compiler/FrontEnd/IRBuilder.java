@@ -378,6 +378,9 @@ public class IRBuilder implements ASTVisitor {
         if (!curBB.isFinish()) {
             curBB.finish(new Jump(curBB, BBMerge.getName()));
             curBB.LinkNextBB(BBMerge);
+
+            //Todo: be careful!!
+            curBB.setAdjacentBB(BBMerge);
         }
         //finish BBFalse
         if (BBFalse != null) {
@@ -386,6 +389,9 @@ public class IRBuilder implements ASTVisitor {
             if (!curBB.isFinish()) {
                 curBB.finish(new Jump(curBB, BBMerge.getName()));
                 curBB.LinkNextBB(BBMerge);
+
+                //Todo: be careful!!
+                curBB.setAdjacentBB(BBMerge);
             }
         }
 
@@ -743,8 +749,9 @@ public class IRBuilder implements ASTVisitor {
         }
 
         //thinking about the type of the oprend
-        VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
-        curFunc.addFuncLocalVar(destReg);
+        //constant folding
+        //VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        //curFunc.addFuncLocalVar(destReg);
         if (node.getLeft().regOrImm instanceof IntImme ){
             if (node.getRight().regOrImm instanceof IntImme){
                 int l = ((IntImme) node.getLeft().regOrImm).getImmeValue();
@@ -759,20 +766,28 @@ public class IRBuilder implements ASTVisitor {
                     case NEQ: result = l != r; break;
                 }
 
-                if (result) curBB.append(new Move(curBB, destReg, new IntImme(1)));
-                else curBB.append(new Move(curBB, destReg, new IntImme(0)));
+                if (result) node.regOrImm = new IntImme(1);
+                else node.regOrImm = new IntImme(0);
+                //if (result) curBB.append(new Move(curBB, destReg, new IntImme(1)));
+                //else curBB.append(new Move(curBB, destReg, new IntImme(0)));
             }
             else {
                 //the right type is a register
+                VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(destReg);
                 curBB.append(new IntCompare(curBB, op, destReg, node.getLeft().regOrImm, node.getRight().regOrImm));
+                node.regOrImm = destReg;
             }
         }
         else {
+            VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
             curBB.append(new IntCompare(curBB, op, destReg, node.getLeft().regOrImm, node.getRight().regOrImm));
+            node.regOrImm = destReg;
         }
 
         //in a expr
-        node.regOrImm = destReg;
+        //node.regOrImm = destReg;
 
         if (inLogicalGeneration(node)){
             //the leaf of the condition
@@ -780,7 +795,20 @@ public class IRBuilder implements ASTVisitor {
             curBB.LinkNextBB(node.ifTrue);
             curBB.LinkNextBB(node.ifFalse);
             curBB.setAdjacentBB(node.ifTrue);*/
-            setShortCircuitLeaf(node);
+            if (!(node.regOrImm instanceof IntImme)) setShortCircuitLeaf(node);
+            else{
+                if (((IntImme) node.regOrImm).getImmeValue() > 0) {
+                    curBB.finish(new Jump(curBB, node.ifTrue.getName()));
+                    curBB.LinkNextBB(node.ifTrue);
+                    curBB.setAdjacentBB(node.ifTrue);
+                }
+                else {
+                    //Todo !! be careful!!
+                    curBB.finish(new Jump(curBB, node.ifFalse.getName()));
+                    curBB.LinkNextBB(node.ifFalse);
+                    curBB.setAdjacentBB(node.ifFalse);
+                }
+            }
         }
     }
 
@@ -823,8 +851,9 @@ public class IRBuilder implements ASTVisitor {
                 throw new RuntimeException("Unknown Binary operator");
         }
 
-        VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
-        curFunc.addFuncLocalVar(destReg);
+        //adding code for constant fold
+        //VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        //curFunc.addFuncLocalVar(destReg);
         if (node.getLeft().regOrImm instanceof IntImme ){
             if (node.getRight().regOrImm instanceof IntImme){
                 int l = ((IntImme) node.getLeft().regOrImm).getImmeValue();
@@ -844,20 +873,27 @@ public class IRBuilder implements ASTVisitor {
                     default:
                         throw new RuntimeException("Unknown Binary operator");
                 }
-                curBB.append(new Move(curBB, destReg, new IntImme(result)));
+                //curBB.append(new Move(curBB, destReg, new IntImme(result)));
+                node.regOrImm = new IntImme(result);
             }
             else {
                 //the right type is a register
+                VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+                curFunc.addFuncLocalVar(destReg);
                 curBB.append(new Move(curBB, destReg, node.getLeft().regOrImm));
                 curBB.append(new Binary(curBB, op, destReg, node.getRight().regOrImm));
+                node.regOrImm = destReg;
             }
         }
         else {
+            VirtualRegister destReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+            curFunc.addFuncLocalVar(destReg);
             curBB.append(new Move(curBB, destReg, node.getLeft().regOrImm));
             curBB.append(new Binary(curBB, op, destReg, node.getRight().regOrImm));
+            node.regOrImm = destReg;
         }
         //in a expr
-        node.regOrImm = destReg;
+        //node.regOrImm = destReg;
     }
 
     /*
