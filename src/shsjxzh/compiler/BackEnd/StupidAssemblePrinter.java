@@ -119,7 +119,7 @@ public class StupidAssemblePrinter implements IRVisitor {
         this.out.println("\tmov rbp, rsp");
 
         //global variable doesn't need it
-        if (!node.getName().equals("__init")) this.out.println("\tsub rsp, " + node.funcLocalVarRegs.size() * 8);
+        this.out.println("\tsub rsp, " + node.funcLocalVarRegs.size() * 8);
 
         //for local variable
         //this.out.println("\tmov r11, rbp");

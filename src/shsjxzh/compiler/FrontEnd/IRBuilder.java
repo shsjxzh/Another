@@ -89,13 +89,13 @@ public class IRBuilder implements ASTVisitor {
         boolean oldInSideEffect = inSideEffect;
         inSideEffect = true;
 
-        StaticData data = new StaticSpace(node.getName(), node.getVarType().getRegisterSize());
+        StaticData data = new StaticSpace(node.getName() + irRoot.getRegCountAndIncrease(), node.getVarType().getRegisterSize());
         //there is no problem when it comes to string, because "stringLiteral" will handle everything
         irRoot.staticDataList.add(data);
 
         //VirtualRegister reg = new VirtualRegister("Reg_" + node.getName());
         //curFunc.addFuncLocalVar(reg);
-        irRoot.getRegCountAndIncrease();
+        //irRoot.getRegCountAndIncrease();
         //it is not Expr!!
         node.varReg = data;
 
@@ -189,7 +189,6 @@ public class IRBuilder implements ASTVisitor {
         curFunc = irRoot.functionMap.get("__init");
         curBB = curFunc.getStartBB();
 
-
         for (DeclNode declNode : node.getDeclnodes()) {
             if (!declNode.isBuildIn) {
                 if (declNode instanceof VarDeclNode) {
@@ -204,8 +203,13 @@ public class IRBuilder implements ASTVisitor {
             }
         }
 
-        //initialize the main first
-        //generateIR(node.getMainDecl());
+        //set the init block return
+        VirtualRegister reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
+        curFunc.addFuncLocalVar(reg);
+        curBB.append(new Call(curBB, irRoot.functionMap.get("main"), new LinkedList<>(), reg));
+        //return node will point to a return basic block
+        //but there is no need for a init function
+        curBB.finish(new Return(curBB, reg));
 
         for (DeclNode declNode : node.getDeclnodes()) {
             if (!declNode.isBuildIn && !(declNode instanceof VarDeclNode)) {
@@ -213,19 +217,6 @@ public class IRBuilder implements ASTVisitor {
                 generateIR(declNode);
             }
         }
-
-        //finish the generation of "__init" function
-        //pretend that there will be no parameters for "main"
-        curFunc = irRoot.functionMap.get("__init");
-        curBB = curFunc.getStartBB();
-
-        VirtualRegister reg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
-        curFunc.addFuncLocalVar(reg);
-
-        curBB.append(new Call(curBB, irRoot.functionMap.get("main"), new LinkedList<>(), reg));
-        //return node will point to a return basic block
-        //but there is no need for a init function
-        curBB.finish(new Return(curBB, reg));
     }
 
     /*
@@ -259,6 +250,7 @@ public class IRBuilder implements ASTVisitor {
             curReturnReg = null;
         }
 
+        //deal with return
         if (curFunc.getReturnStmtNum() >= 1){
             curReturnBB = new BasicBlock("B_" + irRoot.getBBCountAndIncrease(), curFunc);
             generateIR(node.getFuncBlock());
@@ -1135,12 +1127,12 @@ public class IRBuilder implements ASTVisitor {
         curBB.LinkNextBB(Merge);
         curBB.setAdjacentBB(Body);
 
+        //link the Body!!
+        curBB = Body;
         //get the current dim
         ExprNode curExprDim = arrayDim.get(curDim);
         generateIR(curExprDim);
 
-        //link the Body!!
-        curBB = Body;
         VirtualRegister tmpAlloc = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());
         curFunc.addFuncLocalVar(tmpAlloc);
         curBB.append(new Move(curBB, tmpAlloc, new IntImme(8)/*the size of build in type or pointer*/));
