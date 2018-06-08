@@ -15,4 +15,10 @@ public class VirtualRegister extends Register {
 
     //for stupid code generator
     //public String physicalReg = null;
+
+    public PhysicalRegister trueReg;
+
+    public boolean hasPhysicalReg(){
+        return trueReg != null;
+    }
 }

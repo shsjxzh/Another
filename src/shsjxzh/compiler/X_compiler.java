@@ -4,10 +4,8 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import shsjxzh.compiler.AST.*;
-import shsjxzh.compiler.BackEnd.AssemblePrinter;
-import shsjxzh.compiler.BackEnd.IRPrinter;
-import shsjxzh.compiler.BackEnd.StupidAllocater;
-import shsjxzh.compiler.BackEnd.StupidAssemblePrinter;
+import shsjxzh.compiler.BackEnd.*;
+import shsjxzh.compiler.BackEnd.Graph.Graph;
 import shsjxzh.compiler.ErrorHandle.ParseTreeErrorListener;
 import shsjxzh.compiler.FrontEnd.*;
 import shsjxzh.compiler.IR.IRRoot;
@@ -20,6 +18,7 @@ import java.io.PrintStream;
 public class X_compiler {
     private ProgramNode ast;
     private IRRoot irRoot;
+    private Graph interferenceGraph;
 
     private InputStream printIn;
     private PrintStream printOut;
@@ -67,9 +66,15 @@ public class X_compiler {
     private void printIR() {irRoot.accept(new IRPrinter(printOut));}
 
     private void codeGenerator() {
-        //irRoot.accept(new StupidAllocater());
-        //irRoot.accept(new AssemblePrinter(printOut));
-        irRoot.accept(new StupidAssemblePrinter(printOut));
+        //irRoot.accept(new StupidAssemblePrinter(printOut));
+        irRoot.accept(new DefUseGenerater());
+        new LivenessAnalyzer(irRoot).run();
+
+        //irRoot.accept(new livenessPrinter(printOut));
+
+        new InterferenceGenerater(irRoot).run();
+        new Allocater(irRoot).run();
+        irRoot.accept(new AssemblePrinter(printOut));
     }
 
     public void run() throws Exception{

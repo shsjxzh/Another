@@ -93,10 +93,6 @@ public class IRBuilder implements ASTVisitor {
         //there is no problem when it comes to string, because "stringLiteral" will handle everything
         irRoot.staticDataList.add(data);
 
-        //VirtualRegister reg = new VirtualRegister("Reg_" + node.getName());
-        //curFunc.addFuncLocalVar(reg);
-        //irRoot.getRegCountAndIncrease();
-        //it is not Expr!!
         node.varReg = data;
 
         if (node.getExpr() != null){
@@ -209,6 +205,7 @@ public class IRBuilder implements ASTVisitor {
         //return node will point to a return basic block
         //but there is no need for a init function
         curBB.finish(new Return(curBB, reg));
+        curFunc.setEndBB(curBB);
 
         for (DeclNode declNode : node.getDeclnodes()) {
             if (!declNode.isBuildIn && !(declNode instanceof VarDeclNode)) {
@@ -253,7 +250,9 @@ public class IRBuilder implements ASTVisitor {
         if (curFunc.getReturnStmtNum() >= 1){
             curReturnBB = new BasicBlock("B_" + irRoot.getBBCountAndIncrease(), curFunc);
             generateIR(node.getFuncBlock());
-            curReturnBB.append(new Return(curReturnBB, curReturnReg));
+            curReturnBB.finish(new Return(curReturnBB, curReturnReg));
+            //for liveness analysis
+            curFunc.setEndBB(curReturnBB);
         }
         else{
             generateIR(node.getFuncBlock());
@@ -261,6 +260,7 @@ public class IRBuilder implements ASTVisitor {
             if (curFunc.getReturnSize() > 0) curBB.finish(new Return (curBB, new IntImme(0)));
             //void
             else curBB.finish(new Return(curBB, null));
+            curFunc.setEndBB(curBB);
         }
     }
 
@@ -409,7 +409,7 @@ public class IRBuilder implements ASTVisitor {
         BasicBlock forMerge = new BasicBlock("B_merge_" + irRoot.getBBCountAndIncrease(), curFunc);
 
         curBB.LinkNextBB(forCond);
-        curBB.finish();
+        curBB.finish(new Jump(curBB, forCond.getName()));
         curBB.setAdjacentBB(forCond);
 
         if (node.getCond() != null) {
@@ -426,7 +426,7 @@ public class IRBuilder implements ASTVisitor {
         else{
             forCond.LinkNextBB(forBody);
             forCond.setAdjacentBB(forBody);
-            forCond.finish();
+            forCond.finish(new Jump(forCond, forBody.getName()));
         }
 
 
@@ -469,6 +469,7 @@ public class IRBuilder implements ASTVisitor {
 
         curBB.LinkNextBB(whileCond);
         curBB.setAdjacentBB(whileCond);
+        curBB.finish(new Jump(curBB, whileCond.getName()));
 
         curBB = whileCond;
         node.getCond().ifTrue = whileBody;
@@ -1152,6 +1153,7 @@ public class IRBuilder implements ASTVisitor {
 
         curBB.LinkNextBB(Cond);
         curBB.setAdjacentBB(Cond);
+        curBB.finish(new Jump(curBB, Cond.getName()));
 
         curBB = Cond;
         VirtualRegister cmpReg = new VirtualRegister("Reg_" + irRoot.getRegCountAndIncrease());

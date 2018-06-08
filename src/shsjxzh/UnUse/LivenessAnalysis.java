@@ -1,27 +1,48 @@
-package shsjxzh.compiler.BackEnd;
+package shsjxzh.UnUse;
 
-import shsjxzh.compiler.IR.BasicBlock;
-import shsjxzh.compiler.IR.Function;
-import shsjxzh.compiler.IR.IRRoot;
-import shsjxzh.compiler.IR.IRVisitor;
+import shsjxzh.compiler.IR.*;
 import shsjxzh.compiler.IR.Instruction.*;
 import shsjxzh.compiler.IR.Value.*;
 
-public class StupidAllocater implements IRVisitor {
+import java.util.HashSet;
+import java.util.Set;
+
+public class LivenessAnalysis implements IRVisitor {
+    private Set<String> BBVisit = new HashSet<>();
+    
+    private void livenessAnalysis(IR node){
+        if (node != null){
+            node.accept(this);
+        }
+    }
+    
+    @Override
+    public void visit(IRRoot node) {
+        //the def and use are all
+        node.functionMap.values().forEach(x -> livenessAnalysis(x));
+    }
+
     @Override
     public void visit(Function node) {
-
+        if (node.isBuildIn()) return;
+        livenessAnalysis(node.getStartBB());
     }
 
     @Override
     public void visit(BasicBlock node) {
+        if (BBVisit.contains(node.getName())) return;
+        BBVisit.add(node.getName());
 
+        for (Instruction itr = node.getHeadIns(); itr!= null; itr = itr.Next()){
+            livenessAnalysis(itr);
+        }
+
+        //try to print
+        livenessAnalysis(node.getAdjacentBB());
+
+        node.succssorBBMap.values().forEach(x -> livenessAnalysis(x));
     }
-
-    @Override
-    public void visit(IRRoot node) {
-
-    }
+;
 
     @Override
     public void visit(Binary node) {

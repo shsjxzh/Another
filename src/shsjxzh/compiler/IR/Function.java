@@ -1,6 +1,8 @@
 package shsjxzh.compiler.IR;
 
 import shsjxzh.compiler.AST.Decl.FuncDeclNode;
+import shsjxzh.compiler.BackEnd.Graph.Graph;
+import shsjxzh.compiler.IR.Value.PhysicalRegister;
 import shsjxzh.compiler.IR.Value.VirtualRegister;
 
 import java.util.*;
@@ -38,7 +40,7 @@ public class Function extends IR{
         buildIn = true;
     }
 
-    public Function(String name, String startBlockName,int returnNum, int returnSize) {
+    public Function(String name, String startBlockName, int returnNum, int returnSize) {
         this.name = name;
         startBB = new BasicBlock(startBlockName,this);
         this.returnNum = returnNum;
@@ -54,15 +56,6 @@ public class Function extends IR{
         return buildIn;
     }
 
-    /*
-    public void setExitBB(BasicBlock exitBB) {
-        this.exitBB = exitBB;
-    }*/
-
-    //public void setReturnSize(int returnSize) {
-      //  this.returnSize = returnSize;
-    //}
-
     public String getName() {
         return name;
     }
@@ -70,10 +63,6 @@ public class Function extends IR{
     public BasicBlock getStartBB() {
         return startBB;
     }
-
-    /*public BasicBlock getExitBB() {
-        return exitBB;
-    }*/
 
     public int getReturnSize() {
         return returnSize;
@@ -83,4 +72,20 @@ public class Function extends IR{
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }
+
+    //for liveness analysis
+    private BasicBlock endBB;
+
+    public BasicBlock getEndBB() {
+        return endBB;
+    }
+
+    public void setEndBB(BasicBlock endBB) {
+        this.endBB = endBB;
+    }
+
+    //for register allocation
+    public Graph interferenceGraph = new Graph();
+
+    public Set<PhysicalRegister> usedCalleePhyReg = new HashSet<>();
 }

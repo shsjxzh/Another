@@ -7,10 +7,10 @@ public interface IRVisitor {
     //string will be handled later
     
     //fundamental
-    void visit(Function node);
-    void visit(BasicBlock node);
     void visit(IRRoot node);        //with static data and functions
-    
+    void visit(BasicBlock node);
+    void visit(Function node);
+
     //instruction
     //Arithmetic
     void visit(Binary node);         //Add, Sub, Mul, Div, Mod, Shl, Shr, And(bitwise), Or(bitwise), Xor

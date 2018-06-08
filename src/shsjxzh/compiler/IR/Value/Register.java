@@ -11,4 +11,9 @@ public abstract class Register extends Value {
     public String getName() {
         return name;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Register && name.equals(((Register) obj).getName());
+    }
 }

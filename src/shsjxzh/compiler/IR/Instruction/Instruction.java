@@ -3,6 +3,10 @@ package shsjxzh.compiler.IR.Instruction;
 import shsjxzh.compiler.IR.BasicBlock;
 import shsjxzh.compiler.IR.IR;
 import shsjxzh.compiler.IR.IRVisitor;
+import shsjxzh.compiler.IR.Value.VirtualRegister;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class Instruction extends IR {
     protected BasicBlock belongBB;
@@ -30,4 +34,15 @@ public abstract class Instruction extends IR {
     public Instruction Next(){
         return this.next;
     }
+
+    public Instruction Prev() {
+        return prev;
+    }
+
+    //for liveness analysis
+    public VirtualRegister def;
+    public Set<VirtualRegister> use = new HashSet<>();
+
+    public Set<VirtualRegister> liveIn = new HashSet<>();
+    public Set<VirtualRegister> liveOut =  new HashSet<>();
 }

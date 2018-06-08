@@ -20,12 +20,8 @@ public class IRRoot extends IR{
 
     //be careful to add sth
     public IRRoot() {
-       //stringMap.put("\\n", new StaticString("\\n", getStrCountAndIncrease()));
-
        //for global variable initialize
-       //we will simplify it later
        Function init = new Function("__init", "B_" + getBBCountAndIncrease(), 1, 8);
-       //init.setReturnSize(8);  //This is the size of int
        functionMap.put("__init", init);
     }
 
@@ -34,6 +30,10 @@ public class IRRoot extends IR{
     }
 
     public int getBBCountAndIncrease(){
+        if (BBCount == 6){
+            BBCount++;
+            BBCount--;
+        }
         return ++BBCount;
     }
 
