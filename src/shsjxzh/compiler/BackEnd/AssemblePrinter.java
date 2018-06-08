@@ -150,6 +150,8 @@ public class AssemblePrinter implements IRVisitor {
     }
 
     private void MemProcessBinary(Binary node) {
+        Stack<PhysicalRegister> returnStack = new Stack<>();
+
         this.out.print("\tmov rax, ");
         AssemblePrint(node.getDest());
         this.out.println();
@@ -188,24 +190,55 @@ public class AssemblePrinter implements IRVisitor {
                 break;
             case Mod:
                 //Todo make sure the mod instruction!!
+
+                //save
+                if (curFunc.funcParams.size() >= 4){
+                    this.out.println("\tpush rcx");
+                    returnStack.push(PhysicalRegisterSet.rcx);
+                }
+                if (curFunc.funcParams.size() >= 3){
+                    this.out.println("\tpush rdx");
+                    returnStack.push(PhysicalRegisterSet.rdx);
+                }
+
                 this.out.println("\txor rdx, rdx");
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                 this.out.println("\tidiv rcx");
                 //this.out.print("mov rax rdx");
                 break;
             case Div:
-                //Todo make sure the extend instruction!!
+
+                //save
+                if (curFunc.funcParams.size() >= 4){
+                    this.out.println("\tpush rcx");
+                    returnStack.push(PhysicalRegisterSet.rcx);
+                }
+                if (curFunc.funcParams.size() >= 3){
+                    this.out.println("\tpush rdx");
+                    returnStack.push(PhysicalRegisterSet.rdx);
+                }
+
                 this.out.println("\txor rdx, rdx");
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                 this.out.println("\tidiv rcx");
                 break;
             case Shr:
                 //Todo: about the "cl" register
+                if (curFunc.funcParams.size() >= 4){
+                    this.out.println("\tpush rcx");
+                    returnStack.push(PhysicalRegisterSet.rcx);
+                }
+
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                 this.out.println("\tsar rax, cl");
                 break;
             case Shl:
                 //Todo: about the "cl" register
+                if (curFunc.funcParams.size() >= 4){
+                    this.out.println("\tpush rcx");
+                    returnStack.push(PhysicalRegisterSet.rcx);
+                }
+
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                 this.out.println("\tsal rax, cl");
                 break;
@@ -215,6 +248,10 @@ public class AssemblePrinter implements IRVisitor {
         AssemblePrint(node.getDest());
         if (node.getOp() == Binary.BinaryOp.Mod) this.out.println(", rdx");
         else this.out.println(", rax");
+
+        while (!returnStack.empty()){
+            this.out.print("\tpop "); AssemblePrint(returnStack.pop()); this.out.println();
+        }
     }
 
     @Override
@@ -223,6 +260,7 @@ public class AssemblePrinter implements IRVisitor {
             MemProcessBinary(node);
         }
         else{
+            Stack<PhysicalRegister> returnStack = new Stack<>();
             switch (node.getOp()){
                 case Add:
                     this.out.print("\tadd ");
@@ -269,7 +307,18 @@ public class AssemblePrinter implements IRVisitor {
                     break;
                 case Mod:
                     //Todo make sure the mod instruction!!
+
+                    if (curFunc.funcParams.size() >= 4){
+                        this.out.println("\tpush rcx");
+                        returnStack.push(PhysicalRegisterSet.rcx);
+                    }
+                    if (curFunc.funcParams.size() >= 3){
+                        this.out.println("\tpush rdx");
+                        returnStack.push(PhysicalRegisterSet.rdx);
+                    }
+
                     this.out.println("\txor rdx, rdx");
+                    this.out.print("\tmov rax, "); AssemblePrint(node.getDest()); this.out.println();
                     this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                     this.out.println("\tidiv rcx");
 
@@ -278,7 +327,18 @@ public class AssemblePrinter implements IRVisitor {
                     break;
                 case Div:
                     //Todo make sure the extend instruction!!
+
+                    if (curFunc.funcParams.size() >= 4){
+                        this.out.println("\tpush rcx");
+                        returnStack.push(PhysicalRegisterSet.rcx);
+                    }
+                    if (curFunc.funcParams.size() >= 3){
+                        this.out.println("\tpush rdx");
+                        returnStack.push(PhysicalRegisterSet.rdx);
+                    }
+
                     this.out.println("\txor rdx, rdx");
+                    this.out.print("\tmov rax, "); AssemblePrint(node.getDest()); this.out.println();
                     this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                     this.out.println("\tidiv rcx");
 
@@ -287,14 +347,27 @@ public class AssemblePrinter implements IRVisitor {
                     break;
                 case Shr:
                     //Todo: about the "cl" register
+                    if (curFunc.funcParams.size() >= 4){
+                        this.out.println("\tpush rcx");
+                        returnStack.push(PhysicalRegisterSet.rcx);
+                    }
+
                     this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                     this.out.println("\tsar "); AssemblePrint(node.getDest()); this.out.println(", cl");
                     break;
                 case Shl:
                     //Todo: about the "cl" register
+                    if (curFunc.funcParams.size() >= 4){
+                        this.out.println("\tpush rcx");
+                        returnStack.push(PhysicalRegisterSet.rcx);
+                    }
+
                     this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
                     this.out.println("\tsal "); AssemblePrint(node.getDest()); this.out.println(", cl");
                     break;
+            }
+            while (!returnStack.empty()){
+                this.out.print("\tpop "); AssemblePrint(returnStack.pop()); this.out.println();
             }
         }
     }
@@ -398,7 +471,23 @@ public class AssemblePrinter implements IRVisitor {
             }
         }
 
-        switch (node.getArgvs().size()){
+        List<Value> reverseVar = node.getArgvs().subList(0, node.getArgvs().size());
+        Collections.reverse(reverseVar);
+        //int i = node.getArgvs().size();
+        for (Value value : reverseVar) {
+            this.out.print("\tpush ");
+            AssemblePrint(value);
+            this.out.println();
+        }
+
+        int i = node.getArgvs().size();
+        for (PhysicalRegister funcParamReg : PhysicalRegisterSet.FuncParamRegs) {
+            if (i <= 0) break;
+            --i;
+            this.out.print("\tpop "); AssemblePrint(funcParamReg); this.out.println();
+        }
+
+        /*switch (node.getArgvs().size()){
             case 4:
                 if (paramNeedMove(node.getArgvs().get(3), 4)) {
                     this.out.print("\tmov rcx, ");
@@ -422,7 +511,7 @@ public class AssemblePrinter implements IRVisitor {
             case 0:
                 break;
                 default: throw new RuntimeException("build in func size error");
-        }
+        }*/
 
         this.out.println("\tcall " + name);
 
@@ -432,8 +521,11 @@ public class AssemblePrinter implements IRVisitor {
         }
 
         if (node.getDest() != null) {
-            this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
+            this.out.print("\tmov ");
+            AssemblePrint(node.getDest());
+            this.out.println(", rax");
         }
+
     }
 
     @Override
@@ -453,46 +545,20 @@ public class AssemblePrinter implements IRVisitor {
 
             List<Value> reverseVar = node.getArgvs().subList(0, node.getArgvs().size());
             Collections.reverse(reverseVar);
-            int i = node.getArgvs().size();
+            //int i = node.getArgvs().size();
             for (Value value : reverseVar) {
-                //this.out.print("\tmov rax, "); AssemblePrint(value); this.out.println();
-                //this.out.println("\tpush rax");
-                if (i > 4) {
-                    this.out.print("\tpush ");
-                    AssemblePrint(value);
-                    this.out.println();
-                }
-                else {
-                    switch (i){
-                        case 4:
-                            if (paramNeedMove(value, 4)) {
-                                this.out.print("\tmov rcx, ");
-                                AssemblePrint(value);
-                                this.out.println();
-                            }
-                            break;
-                        case 3:
-                            if (paramNeedMove(value, 3)) {
-                                this.out.print("\tmov rdx, ");
-                                AssemblePrint(value);
-                                this.out.println();
-                            }
-                            break;
-                        case 2:
-                            if (paramNeedMove(value, 2)) {
-                                this.out.print("\tmov rsi, "); AssemblePrint(value); this.out.println();
-                            }
-                            break;
-                        case 1:
-                            if (paramNeedMove(value, 1)) {
-                                this.out.print("\tmov rdi, "); AssemblePrint(value); this.out.println();
-                            }
-                            break;
-                        default: throw new RuntimeException("self defined func call error");
-                    }
-                }
-                --i;
+                this.out.print("\tpush ");
+                AssemblePrint(value);
+                this.out.println();
             }
+
+            int i = node.getArgvs().size();
+            for (PhysicalRegister funcParamReg : PhysicalRegisterSet.FuncParamRegs) {
+                if (i <= 0) break;
+                --i;
+                this.out.print("\tpop "); AssemblePrint(funcParamReg); this.out.println();
+            }
+
 
             this.out.println("\tcall @" + node.getCallFunc().getName());
             if (node.getArgvs().size() >= 5) {
@@ -506,6 +572,37 @@ public class AssemblePrinter implements IRVisitor {
             if (node.getDest() != null) {
                 this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
             }
+
+            /*else {
+                switch (i){
+                    case 4:
+                        if (paramNeedMove(value, 4)) {
+                            this.out.print("\tmov rcx, ");
+                            AssemblePrint(value);
+                            this.out.println();
+                        }
+                        break;
+                    case 3:
+                        if (paramNeedMove(value, 3)) {
+                            this.out.print("\tmov rdx, ");
+                            AssemblePrint(value);
+                            this.out.println();
+                        }
+                        break;
+                    case 2:
+                        if (paramNeedMove(value, 2)) {
+                            this.out.print("\tmov rsi, "); AssemblePrint(value); this.out.println();
+                        }
+                        break;
+                    case 1:
+                        if (paramNeedMove(value, 1)) {
+                            this.out.print("\tmov rdi, "); AssemblePrint(value); this.out.println();
+                        }
+                        break;
+                    default: throw new RuntimeException("self defined func call error");
+                }
+            }
+            --i;*/
         }
     }
 
@@ -567,11 +664,18 @@ public class AssemblePrinter implements IRVisitor {
     public void visit(Load node) {
         boolean baseUseIntermediate  = true;
         boolean indexUseIntermediate = true;
+        Stack<PhysicalRegister> returnStack = new Stack<>();
         if (node.getBase() != null) {
             if (hasPhysicalReg(node.getBase())){
                 baseUseIntermediate = false;
             }
             else {
+
+                if (curFunc.funcParams.size() >= 4){
+                    this.out.println("\tpush rcx");
+                    returnStack.push(PhysicalRegisterSet.rcx);
+                }
+
                 this.out.print("\tmov rcx, ");
                 AssemblePrint(node.getBase());
                 this.out.println();
@@ -582,6 +686,12 @@ public class AssemblePrinter implements IRVisitor {
                 indexUseIntermediate = false;
             }
             else {
+
+                if (curFunc.funcParams.size() >= 3){
+                    this.out.println("\tpush rdx");
+                    returnStack.push(PhysicalRegisterSet.rdx);
+                }
+
                 this.out.print("\tmov rdx, ");
                 AssemblePrint(node.getIndex());
                 this.out.println();
@@ -631,17 +741,28 @@ public class AssemblePrinter implements IRVisitor {
             }
             this.out.println("] ");
         }
+
+        while (!returnStack.empty()){
+            this.out.print("\tpop "); AssemblePrint(returnStack.pop()); this.out.println();
+        }
     }
 
     @Override
     public void visit(Store node) {
         boolean baseUseIntermediate  = true;
         boolean indexUseIntermediate = true;
+        Stack<PhysicalRegister> returnStack = new Stack<>();
         if (node.getBase() != null) {
             if (hasPhysicalReg(node.getBase())){
                 baseUseIntermediate = false;
             }
             else {
+
+                if (curFunc.funcParams.size() >= 4){
+                    this.out.println("\tpush rcx");
+                    returnStack.push(PhysicalRegisterSet.rcx);
+                }
+
                 this.out.print("\tmov rcx, ");
                 AssemblePrint(node.getBase());
                 this.out.println();
@@ -652,6 +773,12 @@ public class AssemblePrinter implements IRVisitor {
                 indexUseIntermediate = false;
             }
             else {
+
+                if (curFunc.funcParams.size() >= 3){
+                    this.out.println("\tpush rdx");
+                    returnStack.push(PhysicalRegisterSet.rdx);
+                }
+
                 this.out.print("\tmov rdx, ");
                 AssemblePrint(node.getIndex());
                 this.out.println();
@@ -689,6 +816,10 @@ public class AssemblePrinter implements IRVisitor {
         else {
             AssemblePrint(node.getSource());
             this.out.println();
+        }
+
+        while (!returnStack.empty()){
+            this.out.print("\tpop "); AssemblePrint(returnStack.pop()); this.out.println();
         }
     }
 
