@@ -16,6 +16,7 @@ public class AssemblePrinter implements IRVisitor {
     private Set<String> BBVisit = new HashSet<>();
     private boolean definingGlobal = false;
     private Function curFunc;
+    private Stack<PhysicalRegister> calleeSaveReg = new Stack<>();
 
     //int localVarSize = 0;
 
@@ -119,7 +120,7 @@ public class AssemblePrinter implements IRVisitor {
         //for callee save
         //node.usedCalleePhyReg
 
-        Stack<PhysicalRegister> calleeSaveReg = new Stack<>();
+        calleeSaveReg.clear();
         for (PhysicalRegister calleeReg : node.usedCalleePhyReg) {
             this.out.print("\tpush "); AssemblePrint(calleeReg); this.out.println();
             calleeSaveReg.push(calleeReg);
@@ -459,6 +460,11 @@ public class AssemblePrinter implements IRVisitor {
         if (node.getReturnValue() != null) {
             this.out.print("\tmov rax, "); AssemblePrint(node.getReturnValue()); this.out.println();
         }
+
+        while(!calleeSaveReg.empty()){
+            this.out.print("\tpop "); AssemblePrint(calleeSaveReg.pop()); this.out.println();
+        }
+
         this.out.println("\tleave");
         this.out.println("\tret");
     }

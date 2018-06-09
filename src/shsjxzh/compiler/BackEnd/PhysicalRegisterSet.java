@@ -69,10 +69,10 @@ public class PhysicalRegisterSet {
         UseRegs.add(r11);
 
         //may be I will add registers later
-        UseRegs.add(r11);
         UseRegs.add(r12);
         UseRegs.add(r13);
         UseRegs.add(r14);
+        UseRegs.add(r15);
 
         allRegs.stream().filter(PhysicalRegister::isCallerSave).forEach(CallerSavedRegs::add);
         allRegs.stream().filter(PhysicalRegister::isCalleeSave).forEach(CalleeSavedRegs::add);
