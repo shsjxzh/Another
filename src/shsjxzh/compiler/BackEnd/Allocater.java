@@ -41,7 +41,7 @@ public class Allocater {
                     if (canAlloc) {
                         tmp.colour = i;
                         virtualReg.trueReg = useRegs.get(i);
-                        //node.usedCallerPhyReg.add(virtualReg.trueReg);
+                        node.usedCalleePhyReg.add(virtualReg.trueReg);
                     }
                 }
             }

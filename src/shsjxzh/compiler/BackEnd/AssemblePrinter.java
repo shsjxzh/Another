@@ -119,10 +119,19 @@ public class AssemblePrinter implements IRVisitor {
         //for callee save
         //node.usedCalleePhyReg
 
+        Stack<PhysicalRegister> calleeSaveReg = new Stack<>();
+        for (PhysicalRegister calleeReg : node.usedCalleePhyReg) {
+            this.out.print("\tpush "); AssemblePrint(calleeReg); this.out.println();
+            calleeSaveReg.push(calleeReg);
+        }
         //although it may be wasteful, to be convenient I need it...
         this.out.println("\tsub rsp, " + node.funcLocalVarRegs.size() * 8);
 
         AssemblePrint(node.getStartBB());
+
+        while(!calleeSaveReg.empty()){
+            this.out.print("\tpop "); AssemblePrint(calleeSaveReg.pop()); this.out.println();
+        }
 
         //to ensure safety
         this.out.println("\tleave");
@@ -924,7 +933,7 @@ public class AssemblePrinter implements IRVisitor {
         if (node.hasPhysicalReg()) AssemblePrint(node.trueReg);
         else{
             if (curFunc.funcLocalVarRegs.containsKey(node.getName())) {
-                this.out.print(("qword [rbp - " + (curFunc.localVarPos.get(node.getName()) + 8) + "] "));  //
+                this.out.print(("qword [rbp - " + (curFunc.localVarPos.get(node.getName()) + 8 + curFunc.usedCalleePhyReg.size() * 8) + "] "));  //
             }
 
             else if (curFunc.funcParams.containsKey(node.getName())) {
