@@ -73,6 +73,7 @@ public class PhysicalRegisterSet {
         UseRegs.add(r13);
         UseRegs.add(r14);
         UseRegs.add(r15);
+        UseRegs.add(rbx);
 
         allRegs.stream().filter(PhysicalRegister::isCallerSave).forEach(CallerSavedRegs::add);
         allRegs.stream().filter(PhysicalRegister::isCalleeSave).forEach(CalleeSavedRegs::add);
