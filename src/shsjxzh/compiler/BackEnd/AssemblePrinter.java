@@ -483,7 +483,7 @@ public class AssemblePrinter implements IRVisitor {
 
         Stack<PhysicalRegister> callerSave = new Stack<>();
         for (VirtualRegister virReg: node.liveOut){
-            if (virReg.hasPhysicalReg() && virReg.trueReg.isCallerSave()){
+            if (virReg.hasPhysicalReg() && virReg.trueReg.isCallerSave() && !virReg.equals(node.getDest())){
                 this.out.print("\tpush "); AssemblePrint(virReg.trueReg); this.out.println();
                 callerSave.push(virReg.trueReg);
             }
@@ -571,7 +571,7 @@ public class AssemblePrinter implements IRVisitor {
 
             Stack<PhysicalRegister> callerSave = new Stack<>();
             for (VirtualRegister virReg: node.liveOut){
-                if (virReg.hasPhysicalReg() && virReg.trueReg.isCallerSave()){
+                if (virReg.hasPhysicalReg() && virReg.trueReg.isCallerSave() && !virReg.equals(node.getDest())){
                     this.out.print("\tpush "); AssemblePrint(virReg.trueReg); this.out.println();
                     callerSave.push(virReg.trueReg);
                 }
@@ -699,7 +699,7 @@ public class AssemblePrinter implements IRVisitor {
     public void visit(HeapAllocate node) {
         Stack<PhysicalRegister> callerSave = new Stack<>();
         for (VirtualRegister virReg: node.liveOut){
-            if (virReg.hasPhysicalReg() && virReg.trueReg.isCallerSave()){
+            if (virReg.hasPhysicalReg() && virReg.trueReg.isCallerSave() && !virReg.equals(node.getDest())){
                 this.out.print("\tpush "); AssemblePrint(virReg.trueReg); this.out.println();
                 callerSave.push(virReg.trueReg);
             }
