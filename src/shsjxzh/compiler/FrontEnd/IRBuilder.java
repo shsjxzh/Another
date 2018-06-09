@@ -250,6 +250,13 @@ public class IRBuilder implements ASTVisitor {
         if (curFunc.getReturnStmtNum() >= 1){
             curReturnBB = new BasicBlock("B_" + irRoot.getBBCountAndIncrease(), curFunc);
             generateIR(node.getFuncBlock());
+
+            if (!curBB.isFinish()){
+                curBB.finish(new Jump(curBB, curReturnBB.getName()));
+                curBB.LinkNextBB(curReturnBB);
+                curBB.setAdjacentBB(curReturnBB);
+            }
+
             curReturnBB.finish(new Return(curReturnBB, curReturnReg));
             //for liveness analysis
             curFunc.setEndBB(curReturnBB);
