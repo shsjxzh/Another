@@ -489,47 +489,63 @@ public class AssemblePrinter implements IRVisitor {
             }
         }
 
-        List<Value> reverseVar = node.getArgvs().subList(0, node.getArgvs().size());
-        Collections.reverse(reverseVar);
-        //int i = node.getArgvs().size();
-        for (Value value : reverseVar) {
-            this.out.print("\tpush ");
-            AssemblePrint(value);
-            this.out.println();
+        boolean easyMode = true;
+        for (Value value : node.getArgvs()) {
+            if (value instanceof VirtualRegister){
+                VirtualRegister tmp = (VirtualRegister) value;
+                if (tmp.hasPhysicalReg() && PhysicalRegisterSet.FuncParamRegs.contains(tmp.trueReg)){
+                    easyMode = false;
+                    break;
+                }
+            }
         }
 
-        int i = node.getArgvs().size();
-        for (PhysicalRegister funcParamReg : PhysicalRegisterSet.FuncParamRegs) {
-            if (i <= 0) break;
-            --i;
-            this.out.print("\tpop "); AssemblePrint(funcParamReg); this.out.println();
-        }
+        if (!easyMode) {
+            List<Value> reverseVar = node.getArgvs().subList(0, node.getArgvs().size());
+            Collections.reverse(reverseVar);
+            //int i = node.getArgvs().size();
+            for (Value value : reverseVar) {
+                this.out.print("\tpush ");
+                AssemblePrint(value);
+                this.out.println();
+            }
 
-        /*switch (node.getArgvs().size()){
-            case 4:
-                if (paramNeedMove(node.getArgvs().get(3), 4)) {
-                    this.out.print("\tmov rcx, ");
-                    AssemblePrint(node.getArgvs().get(3));
-                    this.out.println();
-                }
-            case 3:
-                if (paramNeedMove(node.getArgvs().get(2), 3)) {
-                    this.out.print("\tmov rdx, ");
-                    AssemblePrint(node.getArgvs().get(2));
-                    this.out.println();
-                }
-            case 2:
-                if (paramNeedMove(node.getArgvs().get(1), 2)) {
-                    this.out.print("\tmov rsi, "); AssemblePrint(node.getArgvs().get(1)); this.out.println();
-                }
-            case 1:
-                if (paramNeedMove(node.getArgvs().get(0), 1)) {
-                    this.out.print("\tmov rdi, "); AssemblePrint(node.getArgvs().get(0)); this.out.println();
-                }
-            case 0:
-                break;
-                default: throw new RuntimeException("build in func size error");
-        }*/
+            int i = node.getArgvs().size();
+            for (PhysicalRegister funcParamReg : PhysicalRegisterSet.FuncParamRegs) {
+                if (i <= 0) break;
+                --i;
+                this.out.print("\tpop ");
+                AssemblePrint(funcParamReg);
+                this.out.println();
+            }
+        }
+        else{
+            switch (node.getArgvs().size()){
+                case 4:
+                    if (paramNeedMove(node.getArgvs().get(3), 4)) {
+                        this.out.print("\tmov rcx, ");
+                        AssemblePrint(node.getArgvs().get(3));
+                        this.out.println();
+                    }
+                case 3:
+                    if (paramNeedMove(node.getArgvs().get(2), 3)) {
+                        this.out.print("\tmov rdx, ");
+                        AssemblePrint(node.getArgvs().get(2));
+                        this.out.println();
+                    }
+                case 2:
+                    if (paramNeedMove(node.getArgvs().get(1), 2)) {
+                        this.out.print("\tmov rsi, "); AssemblePrint(node.getArgvs().get(1)); this.out.println();
+                    }
+                case 1:
+                    if (paramNeedMove(node.getArgvs().get(0), 1)) {
+                        this.out.print("\tmov rdi, "); AssemblePrint(node.getArgvs().get(0)); this.out.println();
+                    }
+                case 0:
+                    break;
+                    default: throw new RuntimeException("build in func size error");
+            }
+        }
 
         this.out.println("\tcall " + name);
 
@@ -561,20 +577,75 @@ public class AssemblePrinter implements IRVisitor {
                 }
             }
 
-            List<Value> reverseVar = node.getArgvs().subList(0, node.getArgvs().size());
-            Collections.reverse(reverseVar);
-            //int i = node.getArgvs().size();
-            for (Value value : reverseVar) {
-                this.out.print("\tpush ");
-                AssemblePrint(value);
-                this.out.println();
+            boolean easyMode = true;
+            for (Value value : node.getArgvs()) {
+                if (value instanceof VirtualRegister){
+                    VirtualRegister tmp = (VirtualRegister) value;
+                    if (tmp.hasPhysicalReg() && PhysicalRegisterSet.FuncParamRegs.contains(tmp.trueReg)){
+                        easyMode = false;
+                        break;
+                    }
+                }
             }
 
-            int i = node.getArgvs().size();
-            for (PhysicalRegister funcParamReg : PhysicalRegisterSet.FuncParamRegs) {
-                if (i <= 0) break;
-                --i;
-                this.out.print("\tpop "); AssemblePrint(funcParamReg); this.out.println();
+            List<Value> reverseVar = node.getArgvs().subList(0, node.getArgvs().size());
+            Collections.reverse(reverseVar);
+            if (!easyMode) {
+                //int i = node.getArgvs().size();
+                for (Value value : reverseVar) {
+                    this.out.print("\tpush ");
+                    AssemblePrint(value);
+                    this.out.println();
+                }
+
+                int i = node.getArgvs().size();
+                for (PhysicalRegister funcParamReg : PhysicalRegisterSet.FuncParamRegs) {
+                    if (i <= 0) break;
+                    --i;
+                    this.out.print("\tpop ");
+                    AssemblePrint(funcParamReg);
+                    this.out.println();
+                }
+            }
+            else{
+                int i = node.getArgvs().size();
+                for (Value value : reverseVar) {
+                    if (i >= 5) {
+                        this.out.print("\tpush ");
+                        AssemblePrint(value);
+                        this.out.println();
+                    }
+                    else {
+                        switch (i){
+                            case 4:
+                                if (paramNeedMove(value, 4)) {
+                                    this.out.print("\tmov rcx, ");
+                                    AssemblePrint(value);
+                                    this.out.println();
+                                }
+                                break;
+                            case 3:
+                                if (paramNeedMove(value, 3)) {
+                                    this.out.print("\tmov rdx, ");
+                                    AssemblePrint(value);
+                                    this.out.println();
+                                }
+                                break;
+                            case 2:
+                                if (paramNeedMove(value, 2)) {
+                                    this.out.print("\tmov rsi, "); AssemblePrint(value); this.out.println();
+                                }
+                                break;
+                            case 1:
+                                if (paramNeedMove(value, 1)) {
+                                    this.out.print("\tmov rdi, "); AssemblePrint(value); this.out.println();
+                                }
+                                break;
+                            default: throw new RuntimeException("self defined func call error");
+                        }
+                    }
+                    --i;
+                }
             }
 
 
