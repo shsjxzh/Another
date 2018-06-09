@@ -22,8 +22,8 @@ public class InterferenceGenerater {
 
     private void generateFunc(Function node){
         curGraph = node.interferenceGraph;
-        node.funcLocalVarRegs.values().forEach(x -> curGraph.addNode(x));
-        node.funcParams.values().forEach(x -> curGraph.addNode(x));
+        node.funcLocalVarRegs.values().forEach(x -> curGraph.addAllocNode(x));
+        node.funcParams.values().forEach(x -> curGraph.addNonAllocNode(x));
         generateBB(node.getStartBB());
     }
 

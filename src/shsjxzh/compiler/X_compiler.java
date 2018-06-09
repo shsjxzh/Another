@@ -74,6 +74,9 @@ public class X_compiler {
 
         new InterferenceGenerater(irRoot).run();
         new Allocater(irRoot).run();
+
+        //irRoot.accept(new RegAllocPrinter(printOut));
+
         irRoot.accept(new AssemblePrinter(printOut));
     }
 

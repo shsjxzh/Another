@@ -26,13 +26,23 @@ public class Graph {
         }
     }
 
-    public void addNode(VirtualRegister vrReg){
+    public void addAllocNode(VirtualRegister vrReg){
         if (vrReg != null) {
             GraphNode graphNode = Vr2NodeMap.get(vrReg);
             if (graphNode == null){
                 graphNode = new GraphNode(vrReg);
                 Vr2NodeMap.put(vrReg, graphNode);
                 graphNodeSet.add(graphNode);
+            }
+        }
+    }
+
+    public void addNonAllocNode(VirtualRegister vrReg){
+        if (vrReg != null) {
+            GraphNode graphNode = Vr2NodeMap.get(vrReg);
+            if (graphNode == null){
+                graphNode = new GraphNode(vrReg);
+                Vr2NodeMap.put(vrReg, graphNode);
             }
         }
     }
