@@ -300,11 +300,18 @@ public class AssemblePrinter implements IRVisitor {
                     break;
                 case Mul:
                     //Todo is it right?
-                    this.out.print("\timul ");
-                    AssemblePrint(node.getDest());
-                    this.out.print(", ");
-                    AssemblePrint(node.getRight());
-                    this.out.println();
+                    if (OneValueNeedMem(node.getDest())){
+                        this.out.print("\tmov rax, "); AssemblePrint(node.getDest()); this.out.println();
+                        this.out.print("\timul rax, "); AssemblePrint(node.getRight()); this.out.println();
+                        this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
+                    }
+                    else {
+                        this.out.print("\timul ");
+                        AssemblePrint(node.getDest());
+                        this.out.print(", ");
+                        AssemblePrint(node.getRight());
+                        this.out.println();
+                    }
                     break;
                 case Mod:
                     //Todo make sure the mod instruction!!
