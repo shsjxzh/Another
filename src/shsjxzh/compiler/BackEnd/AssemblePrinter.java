@@ -363,7 +363,7 @@ public class AssemblePrinter implements IRVisitor {
                     }
 
                     this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
-                    this.out.println("\tsar "); AssemblePrint(node.getDest()); this.out.println(", cl");
+                    this.out.print("\tsar "); AssemblePrint(node.getDest()); this.out.println(", cl");
                     break;
                 case Shl:
                     //Todo: about the "cl" register
@@ -373,7 +373,7 @@ public class AssemblePrinter implements IRVisitor {
                     }
 
                     this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
-                    this.out.println("\tsal "); AssemblePrint(node.getDest()); this.out.println(", cl");
+                    this.out.print("\tsal "); AssemblePrint(node.getDest()); this.out.println(", cl");
                     break;
             }
             while (!returnStack.empty()){

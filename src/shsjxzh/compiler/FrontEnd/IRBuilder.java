@@ -102,9 +102,9 @@ public class IRBuilder implements ASTVisitor {
             //change when Memory operation is needed
             assignNonMemop(data, node.getExpr().regOrImm, node.getExpr());
         }
-        else{
+        /*else{
             curBB.append(new Move(curBB, data, new IntImme(0)));
-        }
+        }*/
 
         //exit SideEffect
         inSideEffect = oldInSideEffect;
@@ -296,9 +296,9 @@ public class IRBuilder implements ASTVisitor {
         else if (isFuncParam){
             curFunc.addFuncParams(reg);
         }
-        else{
+        /*else{
             curBB.append(new Move(curBB, reg, new IntImme(0)));
-        }
+        }*/
 
         if (!isFuncParam){
             curFunc.addFuncLocalVar(reg);
