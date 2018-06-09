@@ -20,6 +20,10 @@ public class AssemblePrinter implements IRVisitor {
 
     //int localVarSize = 0;
 
+    //VirtualRegister raxCache = null;
+    //VirtualRegister rcxCache = null;
+    Register rdxCache = null;
+
     //Todo : check if all has println!!
     //Todo : rax, rdx will never be used in register allocation, so you can use it with no worry
 
@@ -109,6 +113,10 @@ public class AssemblePrinter implements IRVisitor {
     @Override
     public void visit(Function node) {
         //for self define function, add "@"
+        //raxCache = null;
+        //rcxCache = null;
+        rdxCache = null;
+
         curFunc = node;
 
         if(node.getName().equals("__init")) this.out.println( "main: ");
@@ -165,7 +173,7 @@ public class AssemblePrinter implements IRVisitor {
 
     private void MemProcessBinary(Binary node) {
         Stack<PhysicalRegister> returnStack = new Stack<>();
-
+        boolean rdxCacheWrite = false;
         this.out.print("\tmov rax, ");
         AssemblePrint(node.getDest());
         this.out.println();
@@ -213,6 +221,10 @@ public class AssemblePrinter implements IRVisitor {
                 if (curFunc.funcParams.size() >= 3){
                     this.out.println("\tpush rdx");
                     returnStack.push(PhysicalRegisterSet.rdx);
+                    rdxCache = null;
+                }
+                else{
+                    rdxCacheWrite = true;
                 }
 
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
@@ -228,9 +240,11 @@ public class AssemblePrinter implements IRVisitor {
                     this.out.println("\tpush rcx");
                     returnStack.push(PhysicalRegisterSet.rcx);
                 }
+
                 if (curFunc.funcParams.size() >= 3){
                     this.out.println("\tpush rdx");
                     returnStack.push(PhysicalRegisterSet.rdx);
+                    rdxCache = null;
                 }
 
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
@@ -267,6 +281,8 @@ public class AssemblePrinter implements IRVisitor {
         while (!returnStack.empty()){
             this.out.print("\tpop "); AssemblePrint(returnStack.pop()); this.out.println();
         }
+
+        if (rdxCacheWrite) rdxCache = node.getDest();
     }
 
     @Override
@@ -275,6 +291,7 @@ public class AssemblePrinter implements IRVisitor {
             MemProcessBinary(node);
         }
         else{
+            boolean rdxCacheWrite = false;
             Stack<PhysicalRegister> returnStack = new Stack<>();
             switch (node.getOp()){
                 case Add:
@@ -337,6 +354,10 @@ public class AssemblePrinter implements IRVisitor {
                     if (curFunc.funcParams.size() >= 3){
                         this.out.println("\tpush rdx");
                         returnStack.push(PhysicalRegisterSet.rdx);
+                        rdxCache = null;
+                    }
+                    else {
+                        rdxCacheWrite = true;
                     }
 
                     this.out.print("\tmov rax, "); AssemblePrint(node.getDest()); this.out.println();
@@ -358,6 +379,7 @@ public class AssemblePrinter implements IRVisitor {
                     if (curFunc.funcParams.size() >= 3){
                         this.out.println("\tpush rdx");
                         returnStack.push(PhysicalRegisterSet.rdx);
+                        rdxCache = null;
                     }
 
                     this.out.print("\tmov rax, "); AssemblePrint(node.getDest()); this.out.println();
@@ -393,6 +415,8 @@ public class AssemblePrinter implements IRVisitor {
             while (!returnStack.empty()){
                 this.out.print("\tpop "); AssemblePrint(returnStack.pop()); this.out.println();
             }
+
+            if (rdxCacheWrite) rdxCache = node.getDest();
         }
     }
 
@@ -432,6 +456,13 @@ public class AssemblePrinter implements IRVisitor {
         this.out.println(op + "al");
 
         //Todo: trying to reduce it!!
+        if (hasPhysicalReg(node.getDest())){
+            this.out.print("\tmovzx ");
+            AssemblePrint(node.getDest());
+            this.out.println(", al");
+            return;
+        }
+
         //why movzx don't accept the memory??
         if (curFunc.funcParams.size() >= 4){
             this.out.println("\tpush rcx");
@@ -540,6 +571,7 @@ public class AssemblePrinter implements IRVisitor {
                 AssemblePrint(funcParamReg);
                 this.out.println();
             }
+            rdxCache = null;
         }
         else{
             switch (node.getArgvs().size()){
@@ -554,6 +586,7 @@ public class AssemblePrinter implements IRVisitor {
                         this.out.print("\tmov rdx, ");
                         AssemblePrint(node.getArgvs().get(2));
                         this.out.println();
+                        rdxCache = null;
                     }
                 case 2:
                     if (paramNeedMove(node.getArgvs().get(1), 2)) {
@@ -628,6 +661,7 @@ public class AssemblePrinter implements IRVisitor {
                     AssemblePrint(funcParamReg);
                     this.out.println();
                 }
+                rdxCache = null;
             }
             else{
                 int i = node.getArgvs().size();
@@ -651,6 +685,7 @@ public class AssemblePrinter implements IRVisitor {
                                     this.out.print("\tmov rdx, ");
                                     AssemblePrint(value);
                                     this.out.println();
+                                    rdxCache = null;
                                 }
                                 break;
                             case 2:
@@ -755,7 +790,25 @@ public class AssemblePrinter implements IRVisitor {
                     return;
                 }
             }
+            if (node.getDest().equals(node.getSource())) return;
         }
+
+
+        /*if (raxCache != null && raxCache.equals(node.getSource())){
+            this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rax");
+            return;
+        }*/
+        /*if (rcxCache != null && rcxCache.equals(node.getSource())){
+            this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rcx");
+            return;
+        }*/
+        if (rdxCache != null && rdxCache.equals(node.getSource())){
+            this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rdx");
+            return;
+        }
+
+
+
         if (needIntermediateReg(node.getDest(), node.getSource())){
             this.out.print("\tmov rax, ");
             AssemblePrint(node.getSource());
@@ -801,6 +854,7 @@ public class AssemblePrinter implements IRVisitor {
                 if (curFunc.funcParams.size() >= 3){
                     this.out.println("\tpush rdx");
                     returnStack.push(PhysicalRegisterSet.rdx);
+                    rdxCache = null;
                 }
 
                 this.out.print("\tmov rdx, ");
@@ -888,6 +942,7 @@ public class AssemblePrinter implements IRVisitor {
                 if (curFunc.funcParams.size() >= 3){
                     this.out.println("\tpush rdx");
                     returnStack.push(PhysicalRegisterSet.rdx);
+                    rdxCache = null;
                 }
 
                 this.out.print("\tmov rdx, ");
@@ -943,6 +998,7 @@ public class AssemblePrinter implements IRVisitor {
 
     @Override
     public void visit(VirtualRegister node) {
+        if (node.equals(rdxCache)) rdxCache = null;
         if (node.hasPhysicalReg()) AssemblePrint(node.trueReg);
         else{
             if (curFunc.funcLocalVarRegs.containsKey(node.getName())) {
