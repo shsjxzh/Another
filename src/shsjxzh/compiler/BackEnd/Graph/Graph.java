@@ -2,13 +2,12 @@ package shsjxzh.compiler.BackEnd.Graph;
 
 import shsjxzh.compiler.IR.Value.VirtualRegister;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Graph {
     public Map<VirtualRegister, GraphNode> Vr2NodeMap = new HashMap<>();
+
+    public Set<GraphNode> graphNodeSet = new LinkedHashSet<>();
 
     /*private GraphNode getNode(VirtualRegister obj){
         GraphNode graphNode = Vr2NodeMap.get(obj);
@@ -27,13 +26,15 @@ public class Graph {
         }
     }
 
-    public void addNode(VirtualRegister obj){
-        if (obj != null) {
-            GraphNode graphNode = Vr2NodeMap.get(obj);
+    public void addNode(VirtualRegister vrReg){
+        if (vrReg != null) {
+            GraphNode graphNode = Vr2NodeMap.get(vrReg);
             if (graphNode == null){
-                graphNode = new GraphNode();
-                Vr2NodeMap.put(obj, graphNode);
+                graphNode = new GraphNode(vrReg);
+                Vr2NodeMap.put(vrReg, graphNode);
+                graphNodeSet.add(graphNode);
             }
         }
     }
+
 }
