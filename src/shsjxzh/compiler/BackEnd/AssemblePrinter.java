@@ -201,8 +201,9 @@ public class AssemblePrinter implements IRVisitor {
                     returnStack.push(PhysicalRegisterSet.rdx);
                 }
 
-                this.out.println("\txor rdx, rdx");
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
+                this.out.println("\txor rdx, rdx");
+
                 this.out.println("\tidiv rcx");
                 //this.out.print("mov rax rdx");
                 break;
@@ -218,8 +219,8 @@ public class AssemblePrinter implements IRVisitor {
                     returnStack.push(PhysicalRegisterSet.rdx);
                 }
 
-                this.out.println("\txor rdx, rdx");
                 this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
+                this.out.println("\txor rdx, rdx");
                 this.out.println("\tidiv rcx");
                 break;
             case Shr:
@@ -317,9 +318,10 @@ public class AssemblePrinter implements IRVisitor {
                         returnStack.push(PhysicalRegisterSet.rdx);
                     }
 
-                    this.out.println("\txor rdx, rdx");
                     this.out.print("\tmov rax, "); AssemblePrint(node.getDest()); this.out.println();
                     this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
+
+                    this.out.println("\txor rdx, rdx");
                     this.out.println("\tidiv rcx");
 
                     //save it
@@ -337,9 +339,10 @@ public class AssemblePrinter implements IRVisitor {
                         returnStack.push(PhysicalRegisterSet.rdx);
                     }
 
-                    this.out.println("\txor rdx, rdx");
                     this.out.print("\tmov rax, "); AssemblePrint(node.getDest()); this.out.println();
                     this.out.print("\tmov rcx, "); AssemblePrint(node.getRight()); this.out.println();
+
+                    this.out.println("\txor rdx, rdx");
                     this.out.println("\tidiv rcx");
 
                     //save it
@@ -409,8 +412,16 @@ public class AssemblePrinter implements IRVisitor {
 
         //Todo: trying to reduce it!!
         //why movzx don't accept the memory??
+        if (curFunc.funcParams.size() >= 4){
+            this.out.println("\tpush rcx");
+        }
+
         this.out.println("\tmovzx rcx, al");
         this.out.print("\tmov "); AssemblePrint(node.getDest()); this.out.println(", rcx");
+
+        if (curFunc.funcParams.size() >= 4){
+            this.out.println("\tpop rcx");
+        }
     }
 
     @Override
